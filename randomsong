@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# randomsong - get a list of N random songs from your music directory.
+# this caches a list of songs to a file so it only has to be generated once.
+# it's recommended that the list be saved in /tmp so it will be regenerated once per boot (in case you get new songs)
+
+# usage:
+# randomsong [number]
+
+# examples:
+# randomsong - get one random song from your library
+# randomsong 5 - get five random songs.
+
+# configuration:
+
+# your music directory
+DIRECTORY='/media/music/'
+
+# where to save the list of songs.
+CACHE='/tmp/songlist.txt'
+
+# code:
+
+num="$1"
+
+if [[ -z $num ]]; then
+    num=1
+fi
+
+makesonglist() { # make songlist.txt
+    find "$DIRECTORY" -iname '*.mp3' -or -iname '*.flac' -or -iname '*.m4a' -or -iname '*.ogg' >"$CACHE" 2>/dev/null
+}
+
+rsong() {
+    if [[ -e "$CACHE" ]]; then
+        sort -R "$CACHE" | head -$num
+    else
+        makesonglist
+        rsong
+    fi
+}
+
+rsong

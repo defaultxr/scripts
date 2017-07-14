@@ -1,0 +1,37 @@
+#!/bin/fish
+
+# mpls - list tracks in mpd's current playlist.
+# includes the position in the playlist by default (unlike mpc)
+# with one argument, only shows the current track and 10 before and after it.
+# also shows an indicator next to the current track.
+
+# usage:
+# mpls [context-only]
+
+# examples:
+# mpls - lists the whole playlist
+# mpls c - shows the current song and the ones near it.
+
+# configuration:
+
+# text to show in front of the current track
+set prepend '▶ '
+
+# code:
+
+set mpc (mpc --format='%position% - ')
+
+if test (count $mpc) -gt 1
+    set mpc (echo $mpc[1])
+    if test (count $argv) -eq 1
+        mpc --format='%position% - %artist% - %title%' playlist | grep -i -A 10 -B 10 "^$mpc" | sed "s/^$mpc/$prepend$mpc/"
+    else
+        mpc --format='%position% - %artist% - %title%' playlist | sed "s/^$mpc/$prepend$mpc/"
+    end
+else # mpd is not playing, so just list the whole playlist.
+    if test (count $argv) -ne 1
+        mpc --format='%position% - %artist% - %title%' playlist
+    else
+        echo "MPD is not playing, so there is no playlist context."
+    end
+end

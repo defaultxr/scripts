@@ -1,0 +1,52 @@
+#!/usr/bin/fish
+
+# vol - change alsa volume.
+# more convenient and intuitive than typing crap like "amixer -c 2 set PCM +2%"
+
+# usage:
+# vol <operation> <parameter>
+
+# examples:
+# vol - show current volume
+# vol d - decrease volume by 2%
+# vol u - increase volume by 2%
+# vol u 3 - increase volume by 3%
+# vol t - toggle muting
+# vol 40 - set volume to 40%
+
+# configuration:
+
+# the name of the alsa device to affect
+set device PCM
+
+# the card number
+set $card 2
+
+# code:
+
+if test 1 -eq (count $argv)
+    set op $argv[1]
+    set param 2
+else if test 2 -eq (count $argv)
+    set op $argv[1]
+    set param $argv[2]
+else
+    set op x
+end
+
+if test $op = 'x'
+    amixer -c $card get $device | tail -1 | string sub -s 16
+else
+    amixer -c $card set $device (switch $op
+        case u up h higher +
+            echo $param%+
+        case d down l lower -
+            echo $param%-
+        case r reset set s
+            echo $param%
+        case t
+            echo toggle
+        case '*'
+            echo $op%
+    end) | tail -1 | string sub -s 16
+end

@@ -1,0 +1,26 @@
+#!/usr/bin/perl6
+
+# filter - filter a list of filenames (stdin separated by newlines), outputting only those of a specified type.
+
+# usage:
+# filter <type>
+
+# examples:
+# find ~/media | filter v - list all the video files in ~/media
+# find ~/ | filter a - list every audio file in your home directory
+
+# code:
+
+sub MAIN($type="audio") {
+    my $regex = do given $type {
+        when /a(udio)?/ { rx:i/\.(ogg|mp3|wav|flac|wma|m4a|aiff?|aac|opus)$/ }
+        when /v(ideo)?/ { rx:i/\.(flv|mp4|avi|wmv|webm|ogv|mkv|mov|m2t|m4v)$/ }
+        when /i(mage)?/ { rx:i/\.(gif|png|jpe?g|bmp|webp)$/ }
+        default { say "Unknown type! Try instead: audio, video, image"; exit 1; }
+    }
+    for $*IN.lines() {
+        if ($regex) {
+            .say;
+        };
+    }
+}

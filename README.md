@@ -1,5 +1,5 @@
 # scripts
-Various small scripts I've written or found.
+Various small scripts I've written.
 
 The sources of these scripts contain usage information and examples. Some of the scripts also have configuration options that you may need or want to change.
 

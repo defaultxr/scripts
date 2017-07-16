@@ -20,7 +20,7 @@
 set device PCM
 
 # the card number
-set $card 2
+set card 2
 
 # code:
 

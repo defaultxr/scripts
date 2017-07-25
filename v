@@ -4,8 +4,6 @@
 # unlike calling sxiv directly, this script will make sure you can always see all images in the directory of the image you specify.
 # if you specify a directory, all the images in that directory will be available.
 
-# FIX: if more than one image is specified, only show the images listed.
-
 # usage:
 # v [dirname or filename]
 
@@ -14,6 +12,12 @@
 # 'v -' - get list of files from STDIN and start with the first one.
 # 'v DIRNAME' - get list of files from the directory named DIRNAME and start with the first one.
 # 'v FILENAME' - get list of files from the directory containing FILENAME and show FILENAME, preserving order.
+# 'v FILE1 FILE2 FILE' - only view FILE1, FILE2, and FILE3.
+
+# configuration:
+
+# the default flags to provide to sxiv
+set flags -a -b
 
 # code:
 
@@ -36,9 +40,11 @@ end
 
 if test (count $argv) -eq 0 # no args.
     v .
+else if test (count $argv) -gt 1 # more than one argument
+    exec sxiv $flags $argv # FIX: directories don't work for this
 else if test $argv[1] = '-' # argument was '-' - read list of files from stdin.
-    exec sxiv -a -i -b;
-    exit;
+    exec sxiv $flags -i
+    exit
 else if test -d $argv[1] # it's a directory - view all images inside.
     find-images $argv[1] | v -
     exit
@@ -48,5 +54,5 @@ else if test -f $argv[1] # it's a file - view all images in that directory, show
     set idx (indexof $argv[1] $listing)
     for i in $listing
         echo $i
-    end | sxiv -n $idx -a -i -b;
+    end | sxiv $flags -n $idx -i
 end

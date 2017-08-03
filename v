@@ -25,7 +25,7 @@ function indexof -d "Gets index of first argument in the list of the rest of the
     set x 0
     set needle (basename $argv[1])
     for i in $argv[2..-1]
-        set x (calc -p "$x + 1")
+        set x (expr $x + 1)
         if test (basename $i) = $needle
             echo -n $x
             return

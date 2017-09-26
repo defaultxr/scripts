@@ -52,7 +52,13 @@ else if test -f $argv[1] # it's a file - view all images in that directory, show
     set dir (dirname $argv[1])
     set listing (find-images $dir)
     set idx (indexof $argv[1] $listing)
+    if test $idx = -1
+        echo "$argv[1] not found or unsupported image format."
+        set idx ""
+    else
+        set idx "-n $idx"
+    end
     for i in $listing
         echo $i
-    end | sxiv $flags -n $idx -i
+    end | sxiv $flags $idx -i
 end

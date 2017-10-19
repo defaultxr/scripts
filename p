@@ -16,7 +16,7 @@
 set url $argv[1]
 set user ""
 
-if echo $url | grep '^https\?://\(www.\)twitch.tv/' >/dev/null
+if echo $url | grep '^https\?://\(www.\|go.\)twitch.tv/' >/dev/null
     set user (string split / $url)[4]
     echo Joining \#$user...
     echo "*/window 1" >~/.weechat/weechat_fifo

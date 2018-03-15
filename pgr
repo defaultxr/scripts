@@ -1,0 +1,5 @@
+#!/usr/bin/fish
+# pgr - grep for processes that match the arguments
+# basically like pgrep but its output is meant to be readable by humans.
+
+ps aux | grep -v (status -f) | grep --color -i $argv

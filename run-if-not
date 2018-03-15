@@ -1,0 +1,8 @@
+#!/bin/bash
+# run-if-not: run a program if it's not already running.
+
+if [[ -z $(pgrep `basename $1`) ]];
+then
+    echo $@
+    eval $@
+fi

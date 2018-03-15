@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+# romanize japanese text (to help with learning pronunciation)
+# you can provide the japanese text either as arguments or via stdin.
+# caveat: depends on the python "romkan" library, which is not able to romanize every japanese character.
+
+import sys
+import romkan
+if len(sys.argv) > 1:
+  words = ' '.join(sys.argv[1:])
+else:
+  words = sys.stdin.read()
+
+print(romkan.to_roma(words))

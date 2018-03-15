@@ -1,0 +1,35 @@
+#!/bin/fish
+
+# sshot - take a screenshot.
+# avoids the junk appearing in the screenshot when scrot is used in selection mode.
+# requires slop - https://github.com/naelstrof/slop
+
+# usage:
+# sshot [-s]
+
+# example:
+# sshot -s - select a region and take a screenshot of it
+
+# code:
+
+set region 0
+
+function filedate
+    echo (date '+%Y-%m-%d-%H%M%S')
+end
+
+for i in $argv
+    if test $i = '-s'
+        set region 1
+    end
+end
+
+if test $region -eq 1
+    slop -f "%g" | read G
+    set GX (string split '+' $G | head -1)
+    set filename ~/(filedate)_$GX.png
+    import -window root -crop $G $filename
+else
+    set filename ~/(filedate)_full.png
+    import -window root $filename
+end

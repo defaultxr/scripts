@@ -35,7 +35,7 @@ function indexof -d "Gets index of first argument in the list of the rest of the
 end
 
 function find-images -d "Finds images in ARGV[1]."
-    find $argv[1]/ -maxdepth 1 -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' | sort -n
+    find $argv[1]/ -maxdepth 1 -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' -or -iname '*.webp' | sort -n
 end
 
 if test (count $argv) -eq 0 # no args.

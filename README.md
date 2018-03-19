@@ -8,7 +8,7 @@ They're written in a variety of languages, but maybe I'd make bash versions of t
 More may be added soon.
 
 * `a2v` (bash) - "audio to video". generate a video from a sound file and an image. useful, for example, if you want to upload a track to youtube.
-* `filter` (perl6) - filter a list of filenames (stdin separated by newlines), outputting only those of a specified type.
+* `filter` (perl6) - filter a list of filenames (stdin separated by newlines), outputting only those whose extensions match a specified type.
 * `mpls` (fish) - list tracks in mpd's current playlist, also showing an indicator next to the current track.
 * `p` (fish) - "play". play something with mpv, joining its twitch chat via irc (weechat) if it's a twitch stream.
 * `pgr` (fish) - "process grep". similar to `pgrep` but the output is human-readable rather than meant for scripts.

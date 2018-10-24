@@ -2,10 +2,11 @@
 
 # sshot - take a screenshot.
 # avoids the junk appearing in the screenshot when scrot is used in selection mode.
+# also automatically copies the path to the screenshot to the clipboard (pass -C to prevent this).
 # requires slop - https://github.com/naelstrof/slop
 
 # usage:
-# sshot [-s]
+# sshot [-s] [-C]
 
 # example:
 # sshot -s - select a region and take a screenshot of it
@@ -13,6 +14,7 @@
 # code:
 
 set region 0
+set clipboard 1
 
 function filedate
     echo (date '+%Y-%m-%d-%H%M%S')
@@ -21,6 +23,9 @@ end
 for i in $argv
     if test $i = '-s'
         set region 1
+    end
+    if test $i = '-C'
+        set clipboard 0
     end
 end
 
@@ -32,4 +37,8 @@ if test $region -eq 1
 else
     set filename ~/(filedate)_full.png
     import -window root $filename
+end
+
+if test $clipboard -eq 1
+    echo $filename | xclip -i -selection clip
 end

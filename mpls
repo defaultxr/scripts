@@ -9,8 +9,15 @@
 # mpls [context-only]
 
 # examples:
-# mpls - lists the whole playlist
-# mpls c - shows the current song and the ones near it.
+#
+# list the whole playlist:
+# mpls
+#
+# show the current song and 10 before and after it:
+# mpls c
+#
+# show the current song and the 20 before and after it:
+# mpls 20
 
 # configuration:
 
@@ -20,17 +27,23 @@ set prepend '▶ '
 # code:
 
 set mpc (mpc --format='%position% - ')
+set formatargs "--format=%position% - %artist% - %title%"
+set num 10
+
+if test (count $argv) -gt 0; and string match -qr '^\d+$' $argv[1]
+    set num $argv[1]
+end
 
 if test (count $mpc) -gt 1
     set mpc (echo $mpc[1])
     if test (count $argv) -eq 1
-        mpc --format='%position% - %artist% - %title%' playlist | grep -i -A 10 -B 10 "^$mpc" | sed "s/^$mpc/$prepend$mpc/"
+        mpc $formatargs playlist | grep -i -A $num -B $num "^$mpc" | sed "s/^$mpc/$prepend$mpc/"
     else
-        mpc --format='%position% - %artist% - %title%' playlist | sed "s/^$mpc/$prepend$mpc/"
+        mpc $formatargs playlist | sed "s/^$mpc/$prepend$mpc/"
     end
 else # mpd is not playing, so just list the whole playlist.
     if test (count $argv) -ne 1
-        mpc --format='%position% - %artist% - %title%' playlist
+        mpc $formatargs playlist
     else
         echo "MPD is not playing, so there is no playlist context."
     end

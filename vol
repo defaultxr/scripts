@@ -5,14 +5,30 @@
 
 # usage:
 # vol <operation> <parameter>
+# or:
+# vol <operation and parameter>
+
+# operations are: + u up h higher - d down l lower r reset s set t toggle m mute
 
 # examples:
-# vol - show current volume
-# vol d - decrease volume by 2%
-# vol u - increase volume by 2%
-# vol u 3 - increase volume by 3%
-# vol t - toggle muting
-# vol 40 - set volume to 40%
+#
+# show current volume:
+# vol
+#
+# decrease volume by 2%:
+# vol d
+#
+# increase volume by 5%:
+# vol 5+
+#
+# increase volume by 3%:
+# vol u 3
+#
+# toggle muting:
+# vol t
+#
+# set volume to 40%:
+# vol 40
 
 # configuration:
 
@@ -25,16 +41,20 @@ set card 2
 # code:
 
 if test 1 -eq (count $argv)
-    set op $argv[1]
-    set param 2
+    set op (string replace -r -- '\d+' '' $argv[1])
+    set param (string match -r -- '\d+' $argv[1])
+    if test -z $param
+        set param 2
+    end
+    if test -z $op
+        set op s
+    end
 else if test 2 -eq (count $argv)
     set op $argv[1]
     set param $argv[2]
-else
-    set op x
 end
 
-if test $op = 'x'
+if test 0 -eq (count $argv)
     amixer -c $card get $device | tail -1 | string sub -s 16
 else
     amixer -c $card set $device (switch $op
@@ -44,8 +64,10 @@ else
             echo $param%-
         case r reset set s
             echo $param%
-        case t
+        case t toggle
             echo toggle
+        case m mute
+            echo mute
         case '*'
             echo $op%
     end) | tail -1 | string sub -s 16

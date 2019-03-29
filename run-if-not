@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/usr/bin/fish
 # run-if-not: run a program if it's not already running.
 
-if [[ -z $(pgrep `basename $1`) ]];
-then
-    echo $@
-    eval $@
-fi
+# example:
+#
+# run-if-not emacs
+
+set res (pgrep (basename (echo $argv[1])))
+
+if test -z "$res"
+    exec $argv
+end

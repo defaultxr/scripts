@@ -15,7 +15,7 @@ More may be added soon.
 * `randomsong` (sh) - get a list of N random songs from your music directory.
 * `rfile` (fish) - echo a random file from the current directory or from any subdirectories N deep.
 * `romanize` (python) - romanize Japanese text to help with learning pronunciation.
-* `run-if-not` (bash) - run a program only if it isn't already running.
+* `run-if-not` (fish) - run a program only if it isn't already running.
 * `sshot` (fish) - take a screenshot of the whole screen or of a region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
 * `v` (fish) - view images with sxiv. passes the rest of the images in the directory to sxiv as well. you can also specify a directory instead.
 * `vol` (fish) - change alsa volume conveniently and intuitively.

@@ -8,8 +8,10 @@
 # usage:
 # sshot [-s] [-C]
 
-# example:
-# sshot -s - select a region and take a screenshot of it
+# examples:
+
+# select a region and take a screenshot of it:
+# sshot -s
 
 # code:
 

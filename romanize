@@ -3,6 +3,8 @@
 # you can provide the japanese text either as arguments or via stdin.
 # caveat: depends on the python "romkan" library, which is not able to romanize every japanese character.
 
+# check out: https://github.com/kevincobain2000/jProcessing
+
 import sys
 import romkan
 if len(sys.argv) > 1:

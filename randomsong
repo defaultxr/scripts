@@ -8,8 +8,12 @@
 # randomsong [number]
 
 # examples:
-# randomsong - get one random song from your library
-# randomsong 5 - get five random songs.
+#
+# get one random song from your library:
+# randomsong
+#
+# get five random songs:
+# randomsong 5
 
 # configuration:
 

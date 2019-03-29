@@ -11,8 +11,12 @@
 # a2v <image-file> <audio-file> [output-filename]
 
 # examples:
-# a2v cover.jpg happybirthday.mp3 - use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.avi' in the current directory
-# a2v cover.jpg happybirthday.mp3 dmca.avi - use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.avi as the output filename.
+#
+# use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.avi' in the current directory:
+# a2v cover.jpg happybirthday.mp3
+#
+# use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.avi as the output filename:
+# a2v cover.jpg happybirthday.mp3 dmca.avi
 
 # code:
 

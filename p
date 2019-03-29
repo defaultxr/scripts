@@ -9,7 +9,8 @@
 # p <mpv-arguments...>
 
 # example:
-# p 'https://www.twitch.tv/defaultxr/' - play my twitch stream and join its chat.
+# play my twitch stream and join its chat:
+# p 'https://www.twitch.tv/defaultxr/'
 
 # code:
 
@@ -17,7 +18,7 @@ set url $argv[1]
 set user ""
 
 if echo $url | grep '^https\?://\(www.\|go.\)\?twitch.tv/' >/dev/null
-    set user (string split / $url)[4]
+    set user (string lower (string split / $url)[4])
     echo Joining \#$user...
     echo "*/window 1" >~/.weechat/weechat_fifo
     echo "irc.server.twitch */join #$user" >~/.weechat/weechat_fifo

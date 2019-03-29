@@ -6,8 +6,12 @@
 # filter <type>
 
 # examples:
-# find ~/media | filter v - list all the video files in ~/media
-# find ~/ | filter a - list every audio file in your home directory
+
+# list all the video files in ~/media:
+# find ~/media | filter v
+
+# list every audio file in your home directory:
+# find ~/ | filter a
 
 # code:
 

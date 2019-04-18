@@ -23,7 +23,7 @@ sub MAIN($type="audio") {
         default { say "Unknown type! Try instead: audio, video, image"; exit 1; }
     }
     for $*IN.lines() {
-        if ($regex) {
+        if ($_ ~~ $regex) {
             .say;
         };
     }

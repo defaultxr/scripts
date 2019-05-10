@@ -1,4 +1,4 @@
-#!/bin/fish
+#!/usr/bin/env fish
 
 # v - view images with sxiv.
 # unlike calling sxiv directly, this script will make sure you can always see all images in the directory of the image you specify.

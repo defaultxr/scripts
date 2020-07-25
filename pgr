@@ -2,4 +2,7 @@
 # pgr - grep for processes that match the arguments
 # basically like pgrep but its output is meant to be readable by humans.
 
-ps aux | grep -v (status -f) | grep --color -i $argv
+# ps aux | grep -v (status -f) | grep --color -i "$argv"
+
+# this disgusting regexp is to only match against the command line, not against user or other columns:
+ps aux | grep -v (status -f) | string match -er "\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+.*$argv" | grep --color -i "$argv"

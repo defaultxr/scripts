@@ -5,8 +5,8 @@
 #
 # run-if-not emacs
 
-set res (pgrep (basename (echo $argv[1])))
+set res (basename (echo $argv[1]))
 
-if test -z "$res"
+if not pgrep "^$res\$" >/dev/null
     exec $argv
 end

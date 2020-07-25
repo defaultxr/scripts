@@ -1,4 +1,4 @@
-#!/usr/bin/fish
+#!/usr/bin/env fish
 
 # vol - change alsa volume.
 # more convenient and intuitive than typing crap like "amixer -c 2 set PCM +2%"

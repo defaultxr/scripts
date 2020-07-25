@@ -1,4 +1,4 @@
-#!/bin/fish
+#!/usr/bin/env fish
 # rfile - output a random file in the current directory.
 # with an argument ARG, output a random file in any of a maximum of ARG subdirectories.
 

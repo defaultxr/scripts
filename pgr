@@ -1,4 +1,4 @@
-#!/usr/bin/fish
+#!/usr/bin/env fish
 # pgr - grep for processes that match the arguments
 # basically like pgrep but its output is meant to be readable by humans.
 

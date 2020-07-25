@@ -1,4 +1,4 @@
-#!/bin/fish
+#!/usr/bin/env fish
 
 # mpls - list tracks in mpd's current playlist.
 # includes the position in the playlist by default (unlike mpc)

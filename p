@@ -1,4 +1,4 @@
-#!/bin/fish
+#!/usr/bin/env fish
 
 # p - "play". play something with mpv, joining its twitch chat via irc (weechat) if it's a twitch stream.
 # once the stream is stopped, the channel will be exited.

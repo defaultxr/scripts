@@ -1,4 +1,4 @@
-#!/usr/bin/fish
+#!/usr/bin/env fish
 # run-if-not: run a program if it's not already running.
 
 # example:

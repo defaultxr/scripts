@@ -1,16 +1,15 @@
 # scripts
+
 Various small scripts I've written.
 
-The sources of these scripts contain usage information and examples. Some of the scripts also have configuration options that you may need or want to change.
+Each script contains usage information and examples in its source. Some of the scripts also have configuration options that you may need or want to change.
 
-They're written in a variety of languages, but maybe I'd make bash versions of them at some point (even though Bash sucks).
-
-More may be added soon.
+They're written in a variety of languages, but mostly [fish](https://fishshell.com/) because fish is great.
 
 * `a2v` (bash) - "audio to video". generate a video from a sound file and an image. useful, for example, if you want to upload a track to youtube.
 * `auto-rotate-image` (fish) - correct broken rotation in image files.
 * `c` (fish) - convenient interface to the clipboard.
-* `filter` (perl6) - filter a list of filenames (stdin separated by newlines), outputting only those whose extensions match a specified type.
+* `filter` (raku) - filter a list of filenames (stdin separated by newlines), outputting only those whose extensions match a specified type.
 * `loc` (fish) - locate files by searching their names case-insensitively with `bfs` or `find`.
 * `move-gui` (fish) - move a file or files with a gui.
 * `mpls` (fish) - list tracks in mpd's current playlist, also showing an indicator next to the current track.

@@ -1,4 +1,4 @@
-#!/usr/bin/raku
+#!/usr/bin/env raku
 
 # filter - filter a list of filenames (stdin separated by newlines), outputting only those of a specified type.
 

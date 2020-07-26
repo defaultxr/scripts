@@ -1,0 +1,30 @@
+#!/usr/bin/env fish
+# move a file using a file selector gui.
+# accepts a list of files either as arguments or from stdin if '-' is the first argument.
+# will also call 'tmsu repair' if you have tmsu in your path.
+# requires zenity.
+
+# FIX - maybe this should be able to rename files too?
+
+if test (count $argv) -eq 0; or test "$argv[1]" = '-'
+    set files (cat)
+else
+    set files $argv
+end
+
+set dir (realpath $files[1])
+
+set destination (zenity --file-selection --directory --filename=$dirname)
+
+if test $status -ne 0
+    exit 0
+end
+
+for i in $files
+    set full (realpath $i)
+    mv $full $destination
+    set basename (basename $i)
+    if command -q tmsu
+        tmsu repair --manual $full "$destination/$basename"
+    end
+end

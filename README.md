@@ -9,6 +9,7 @@ More may be added soon.
 
 * `a2v` (bash) - "audio to video". generate a video from a sound file and an image. useful, for example, if you want to upload a track to youtube.
 * `auto-rotate-image` (fish) - correct broken rotation in image files.
+* `c` (fish) - convenient interface to the clipboard.
 * `filter` (perl6) - filter a list of filenames (stdin separated by newlines), outputting only those whose extensions match a specified type.
 * `mpls` (fish) - list tracks in mpd's current playlist, also showing an indicator next to the current track.
 * `p` (fish) - "play". play something with mpv, joining its twitch chat via irc (weechat) if it's a twitch stream.

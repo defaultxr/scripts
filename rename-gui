@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+# rename a file with a gui.
+# requires zenity.
+
+set orig (basename $argv[1])
+set forig (realpath $argv[1])
+set dir (dirname $forig)
+
+set new (zenity --entry --text="Rename '$orig' to:" --entry-text="$orig")
+
+if test $status -eq 0
+    mv "$forig" "$dir/$new"
+end
+

@@ -16,6 +16,7 @@ More may be added soon.
 * `p` (fish) - "play". play something with mpv, joining its twitch chat via irc (weechat) if it's a twitch stream.
 * `pgr` (fish) - "process grep". similar to `pgrep` but the output is human-readable rather than meant for scripts.
 * `randomsong` (sh) - get a list of N random songs from your music directory.
+* `rename-gui` (fish) - rename a file with a gui.
 * `rfile` (fish) - echo a random file from the current directory or from any subdirectories N deep.
 * `romanize` (python) - romanize Japanese text to help with learning pronunciation.
 * `run-if-not` (fish) - run a program only if it isn't already running.

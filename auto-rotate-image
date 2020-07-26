@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+# automatically correct the rotation for an image
+# some software will write rotation information into an image incorrectly
+# which causes the image to show up wrong in other programs.
+# this script corrects that for each image provided as an argument.
+# it also outputs the filename of the result to stdout.
+
+mkdir -p /tmp/images-autorotated/
+for i in $argv
+    set file (basename $i)
+    set output "/tmp/images-autorotated/$file"
+    convert $i -auto-orient $output
+    echo $output
+end

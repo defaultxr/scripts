@@ -1,0 +1,16 @@
+#!/usr/bin/env fish
+# ssuspend - "screen suspend"
+# suspends your monitor, of course!
+# 'ssuspend on' to unsuspend.
+
+if test (count $argv) = 1
+    if string match -q '*help*' -- "$argv[1]"
+        echo "ssuspend - \"screen suspend\". 'ssuspend on' to unsuspend."
+        exit
+    end
+    set action on
+else
+    set action suspend
+end
+
+xset dpms force $action

@@ -19,6 +19,7 @@ More may be added soon.
 * `romanize` (python) - romanize Japanese text to help with learning pronunciation.
 * `run-if-not` (fish) - run a program only if it isn't already running.
 * `sshot` (fish) - take a screenshot of the whole screen or of a region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
+* `ssuspend` (fish) - suspend your monitor(s).
 * `translate-selected` (fish) - pop up a window showing the translation of the selected text.
 * `v` (fish) - view images with sxiv. passes the rest of the images in the directory to sxiv as well. you can also specify a directory instead.
 * `vol` (fish) - change alsa volume conveniently and intuitively.

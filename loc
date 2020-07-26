@@ -1,0 +1,10 @@
+#!/usr/bin/env fish
+# loc - locate files by name
+# basically a shortcut for case-insensitive searching anywhere in a file's name.
+# requires either bfs or find.
+
+if not command -q bfs
+    alias bfs 'find'
+end
+
+bfs . -iname '*'(string join '*' $argv)'*'

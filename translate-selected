@@ -1,0 +1,8 @@
+#!/usr/bin/env fish
+# translate-selected - translate the selected text, showing the result with the OSD
+# requires the 'translate-shell' tool and 'xclip'
+
+#xsel | trans -brief | osd -
+set translation (xclip -o -selection primary | trans -brief | string collect)
+
+zenity --info --width=800 --text="$translation"

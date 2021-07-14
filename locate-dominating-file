@@ -1,0 +1,27 @@
+#!/usr/bin/env fish
+# locate-dominating-file - look up in the directory hierarchy for a specified file.
+# this can be used, for example, to check if we're in a git repository, by locating ".git".
+# returns 1 if the target was not found, or 0 on success.
+# with the -s or --silent argument, don't print anything to stdout.
+# inspired by the emacs function of the same name.
+
+argparse -n locate-dominating-file 's/silent' -- $argv
+
+set file $argv[1]
+
+while true
+    if test -e $file
+        if test -z "$_flag_s"
+            echo -n (pwd)
+            if not string match -q '*/' (pwd)
+                echo -n '/'
+            end
+            echo $file
+        end
+        exit 0
+    end
+    if test (pwd) = '/'
+        exit 1
+    end
+    cd ..
+end

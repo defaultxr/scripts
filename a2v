@@ -1,72 +1,102 @@
-#!/bin/bash
+#!/usr/bin/env fish
 
 # a2v - "audio to video". generate a video from a sound file and an image.
 # useful for when you want to upload music to youtube or other video sharing sites.
-# the image file can't be a gif.
-# if the image file is big then generating the video will take a lot longer.
-
-# i found this online and modified it slightly. i don't remember/can't find the original source.
+# note: (for now) the image file can't be a gif.
+# also note: if the image file size is big, generating the video will take longer.
 
 # usage:
-# a2v <image-file> <audio-file> [output-filename]
+#
+# a2v <IMAGE> <AUDIO> [OUTPUT]
+# or:
+# a2v <-i IMAGE> <-a AUDIO> [-o OUTPUT]
 
 # examples:
 #
 # use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.avi' in the current directory:
 # a2v cover.jpg happybirthday.mp3
 #
-# use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.avi as the output filename:
-# a2v cover.jpg happybirthday.mp3 dmca.avi
+# use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.ogv as the output filename:
+# a2v cover.jpg happybirthday.mp3 dmca.ogv
+#
+# use blah.png as the image, foobar.mp3 as the audio, and nice.mp4 as the filename of the resulting video:
+# a2v -i blah.png -a foobar.mp3 -o nice.mp4
 
 # code:
 
-FFMPEG=`which ffmpeg`
-if [ "$FFMPEG" = "" ] ; then
-    echo "ffmpeg is required to generate the video."
+if not command -qs ffmpeg
+    echo "error: ffmpeg not found in path."
     exit 1
-fi
+end
 
-if (( $# < 2 )) ; then
-    echo "Usage: a2v <image-file> <audio-file> [output-filename]"
-    exit 0
-fi
+argparse -n a2v 'i/image=' 'a/audio=' 'o/output=' 'h/help' -- $argv
 
-if [ ! -f "$1" ] ; then
-    echo "Source image '$1' not found."
+if test -n "$_flag_h"
+    echo "a2v - convert an image and audio file to a video."
+    echo "usage: a2v [-i] IMAGE [-a] AUDIO [[-o] OUTPUT]"
+    echo
+    echo "example: a2v -i foo.jpg -a bar.mp3 -o blah.avi"
+    echo "example: a2v foo.jpg bar.mp3"
+    echo "in the second example, the output filename is automatically set to \"bar.avi\"."
+end
+
+set image "$_flag_i"
+set audio "$_flag_a"
+set output "$_flag_o"
+
+if test -z "$image"
+    set image $argv[1]
+    if test -z "$image"
+        echo "error: a2v requires an image argument (first argument or -i)."
+        exit 1
+    end
+    set argv $argv[2..]
+end
+
+if test -z "$audio"
+    set audio $argv[1]
+    if test -z "$audio"
+        echo "error: a2v requires an audio argument (second argument or -a)."
+        exit 1
+    end
+    set argv $argv[2..]
+end
+
+if test -z "$output"
+    set output $argv[1]
+    if test -z "$output"
+        set output (string split -m 1 -r '.' "$audio")[1]".avi"
+        echo "Assuming output filename '$output'."
+    end
+    set argv $argv[2..]
+end
+
+# echo image: $image
+# echo audio: $audio
+# echo output: $output
+
+if test ! -f $image
+    echo "Source image '$image' not found."
     exit 1
-else
-    # FIX: check if the image is a gif, and if so, create a temporary copy that is converted to png.
-    IMAGE="$1"
-fi
+end
 
-if [ ! -f "$2" ] ; then
-    echo "Source audio '$2' not found."
+if test ! -f $audio
+    echo "Source audio '$audio' not found."
     exit 1
-else
-    AUDIO="$2"
-    LENGTH="`ffprobe -i "$AUDIO" -show_entries format=duration -loglevel quiet -of csv="p=0"`"
-fi
+end
 
-if (( $# == 2 )) ; then
-    OUTPUT="`basename "$AUDIO" .mp3`.avi"
-    echo "Assuming output filename '$OUTPUT'."
-else
-    OUTPUT="$3"
-fi
+# FIX: check if the image is a gif, and if so, create a temporary copy that is converted to png.
 
-if [ -f "$OUTPUT" ] ; then
-    echo "Output file '$OUTPUT' exists.  Overwrite? (y/n)"
-    read CONFIRM
-    if [ "$CONFIRM" == "y" ] ; then
-        echo "Overwriting '$OUTPUT'"
+set length (ffprobe -i "$audio" -show_entries format=duration -loglevel quiet -of csv="p=0")
+
+if test -f "$output"
+    read -P "Output file '$output' already exists. Overwrite? (y/N) " answer
+    if string match -i 'y*' "$answer"
+        echo "Overwriting '$output'."
     else
-        if [ "$CONFIRM" == "Y" ] ; then
-            echo "Overwriting '$OUTPUT'"
-        else
-            echo "Operation canceled."
-            exit 1
-        fi
-    fi
-fi
+        echo "Operation canceled."
+        exit 1
+    end
+end
 
-$FFMPEG -i "$AUDIO" -loop 1 -i "$IMAGE" -r 1 -shortest -t $LENGTH "$OUTPUT"
+ffmpeg -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length "$output"

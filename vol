@@ -8,7 +8,13 @@
 # or:
 # vol <operation and parameter>
 
-# operations are: + u up h higher - d down l lower r reset s set t toggle m mute
+# operations are:
+# + u up h higher - increase volume.
+# - d down l lower - decrease volume.
+# r reset s set - set volume to the specified value.
+# t toggle - toggle muting.
+# m mute - mute.
+# un unmute - unmute.
 
 # examples:
 #
@@ -68,6 +74,8 @@ else
             echo toggle
         case m mute
             echo mute
+        case un unmute
+            echo unmute
         case '*'
             echo $op%
     end) | tail -1 | string sub -s 16

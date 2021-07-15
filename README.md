@@ -10,7 +10,7 @@ They're written in a variety of languages, but mostly [fish](https://fishshell.c
 * `auto-rotate-image` (fish) - correct broken rotation in image files.
 * `c` (fish) - convenient interface to the clipboard.
 * `filter` (raku) - filter a list of filenames (stdin separated by newlines), outputting only those whose extensions match a specified type.
-* `loc` (fish) - locate files by searching their names case-insensitively with `bfs` or `find`.
+* `loc` (fish) - locate files by searching their names case-insensitively with [`bfs`](https://github.com/tavianator/bfs) or `find`.
 * `locate-dominating-file` (fish) - look up in the directory hierarchy for a specified file.
 * `move-gui` (fish) - move a file or files with a gui.
 * `mpls` (fish) - list tracks in mpd's current playlist, also showing an indicator next to the current track.

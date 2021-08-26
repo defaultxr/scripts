@@ -16,15 +16,19 @@
 # code:
 
 sub MAIN($type="audio") {
-    my $regex = do given $type {
-        when /a(udio)?/ { rx:i/\.(ogg|mp3|wav|flac|wma|m4a|aiff?|aac|opus)$/ }
-        when /v(ideo)?/ { rx:i/\.(flv|mp4|avi|wmv|webm|ogv|mkv|mov|m2t|m4v)$/ }
-        when /i(mage)?/ { rx:i/\.(gif|png|jpe?g|bmp|webp)$/ }
-        default { say "Unknown type! Try instead: audio, video, image"; exit 1; }
+    my $func = do given $type {
+        when /^a(udio)?$/ { sub ($_) { rx:i/\.(ogg|mp3|wav|flac|wma|m4a|aiff?|aac|opus)$/ } }
+        when /^v(ideo)?$/ { sub ($_) { rx:i/\.(flv|mp4|avi|wmv|webm|ogv|mkv|mov|m2t|m4v)$/ } }
+        when /^i(mage)?$/ { sub ($_) { rx:i/\.(gif|png|jpe?g|bmp|webp)$/ } }
+        when /^d(ir(ectory)?)?$/ { sub ($_) { $_.IO.d; } }
+        default {
+            say "filter: unknown type \"$type\". Try instead: audio, video, image, directory";
+            exit 1;
+        }
     }
     for $*IN.lines() {
-        if ($_ ~~ $regex) {
+        if $func($_) {
             .say;
-        };
+        }
     }
 }

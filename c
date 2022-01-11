@@ -7,7 +7,17 @@
 # use -p to use the primary selection instead of clipboard (except on mac os).
 # on linux, requires xclip.
 
-argparse -n c 'p/primary' -- $argv
+argparse -n c 'h/help' 'p/primary' 'i/input' -- $argv
+
+if test -n "$_flag_h"
+    echo "c - clipboard interface"
+    echo "Usage: c [arguments]"
+    echo
+    echo "  -h/--help - Show this help and exit."
+    echo "  -p/--primary - Use primary selection instead of clipboard."
+    echo "  -/-i/--input - Send stdin to the clipboard."
+    exit
+end
 
 set uname (uname)
 

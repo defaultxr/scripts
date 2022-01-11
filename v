@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 
-# v - view images with sxiv.
-# unlike calling sxiv directly, this script will make sure you can always see all images in the directory of the image you specify.
+# v - view images with nsxiv.
+# unlike calling nsxiv directly, this script will make sure you can always see all images in the directory of the image you specify.
 # if you specify a directory, all the images in that directory will be available.
 
 # usage:
@@ -16,10 +16,16 @@
 
 # configuration:
 
-# the default flags to provide to sxiv
+# the default flags to provide to nsxiv
 set flags -a -b
 
 # code:
+
+argparse -n v 'T/title=' -- $argv
+
+set title "$_flag_T"
+
+set args $argv
 
 function indexof -d "Gets index of first argument in the list of the rest of the arguments."
     set x 0
@@ -34,19 +40,31 @@ function indexof -d "Gets index of first argument in the list of the rest of the
     echo -n -1
 end
 
-function find-images -d "Finds images in ARGV[1]."
+function find-images -d "Finds images in the specified directory."
     find $argv[1]/ -maxdepth 1 -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' -or -iname '*.webp' | sort -n
+end
+
+function make-title -d "Return a title string for the nsxiv window."
+    if test -n "$title"
+        set title "$title"
+    else if test (count $args) -lt 1
+        set title "v "(pwd)
+    else
+        set title "v "(realpath $args)
+    end
+    set title (echo $title | sed 's@/home/modula@~@' | sed 's@/f-anime/@/f-a/@'| sed 's@~/misc/Ptest/@~/m/P/@')
+    echo $title
 end
 
 if test (count $argv) -eq 0 # no args.
     v .
 else if test (count $argv) -gt 1 # more than one argument
-    exec sxiv $flags $argv # FIX: directories don't work for this
+    exec nsxiv $flags -T (make-title) $argv # FIX: directories don't work for this
 else if test $argv[1] = '-' # argument was '-' - read list of files from stdin.
-    exec sxiv $flags -i
-    exit
+    exec nsxiv $flags -T (make-title) -i
 else if test -d $argv[1] # it's a directory - view all images inside.
-    find-images $argv[1] | v -
+    # exec nsxiv $argv[1]
+    find-images $argv[1] | nsxiv $flags -T (make-title) -i
     exit
 else if test -f $argv[1] # it's a file - view all images in that directory, showing the file first.
     set dir (dirname $argv[1])
@@ -60,5 +78,5 @@ else if test -f $argv[1] # it's a file - view all images in that directory, show
     end
     for i in $listing
         echo $i
-    end | sxiv $flags $idx -i
+    end | nsxiv $flags $idx -T (make-title) -i
 end

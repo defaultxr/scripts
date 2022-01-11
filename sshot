@@ -3,7 +3,7 @@
 # sshot - take a screenshot.
 # avoids the junk appearing in the screenshot when scrot is used in selection mode.
 # also automatically copies the path to the screenshot to the clipboard (pass -C to prevent this).
-# requires slop - https://github.com/naelstrof/slop
+# Requirements: scrot, slop ( https://github.com/naelstrof/slop )
 
 # usage:
 # sshot [-s] [-C]
@@ -31,14 +31,21 @@ for i in $argv
     end
 end
 
+# using scrot for now because imagemagick's images fuck up weirdly with twitter
+
 if test $region -eq 1
-    slop -f "%g" | read G
+    slop -f "%g " | read G
     set GX (string split '+' $G | head -1)
     set filename ~/(filedate)_$GX.png
-    import -window root -crop $G $filename
+    # import -window root -crop $G $filename
+    set sr (string split '+' $G | string split 'x')
+    set sr (printf "%s,%s,%s,%s" $sr[3] $sr[4] $sr[1] $sr[2])
+    echo $sr
+    scrot -a $sr $filename
 else
     set filename ~/(filedate)_full.png
-    import -window root $filename
+    scrot -m $filename # add -p argument to capture pointer
+    # import -window root $filename
 end
 
 if test $clipboard -eq 1

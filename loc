@@ -3,7 +3,7 @@
 # basically a shortcut for case-insensitive searching anywhere in a file's name.
 # requires either bfs or find.
 
-if not command -q bfs
+if not command -qs bfs
     alias bfs 'find'
 end
 

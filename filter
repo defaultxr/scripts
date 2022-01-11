@@ -1,9 +1,12 @@
 #!/usr/bin/env raku
 
-# filter - filter a list of filenames (stdin separated by newlines), outputting only those of a specified type.
+# filter - filter a list of filenames, outputting only those whose extension denotes a specified "type".
 
 # usage:
 # filter <type>
+#
+# type can be: audio, image, video, visual (images and video), media (audio, images, and video), or directory
+# type can also be abbreviated to the first letter.
 
 # examples:
 
@@ -15,20 +18,47 @@
 
 # code:
 
+our %types := {
+    audio => "aac"|"aif"|"aiff"|"flac"|"m4a"|"mp3"|"ogg"|"opus"|"wav"|"wma",
+    image => "bmp"|"gif"|"jpeg"|"jpg"|"png"|"webp",
+    video => "avi"|"flv"|"m2t"|"m4v"|"mkv"|"mov"|"mp4"|"ogv"|"webm"|"wmv",
+    archive => "7z"|"bz2"|"gz"|"rar"|"tar"|"zip",
+};
+
+sub is-extension-type($filename, $type) {
+    $filename.IO.extension.lc ~~ %types{$type}
+}
+
+# sub normalize-type($_) {
+
+# }
+
 sub MAIN($type="audio") {
     my $func = do given $type {
-        when /^a(udio)?$/ { sub ($_) { rx:i/\.(ogg|mp3|wav|flac|wma|m4a|aiff?|aac|opus)$/ } }
-        when /^v(ideo)?$/ { sub ($_) { rx:i/\.(flv|mp4|avi|wmv|webm|ogv|mkv|mov|m2t|m4v)$/ } }
-        when /^i(mage)?$/ { sub ($_) { rx:i/\.(gif|png|jpe?g|bmp|webp)$/ } }
-        when /^d(ir(ectory)?)?$/ { sub ($_) { $_.IO.d; } }
+        when /^(a(udio)?|mu(sic)?)$/ {
+            sub ($_) { &is-extension-type($_, "audio") }
+        }
+        when /^i(mages?)?$/ {
+            sub ($_) { &is-extension-type($_, "image") }
+        }
+        when /^v(ideos?)?$/ {
+            sub ($_) { &is-extension-type($_, "video") }
+        }
+        when /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/ {
+            sub ($_) { &is-extension-type($_, "archive") }
+        }
+        when /^(vis(ual)?|me(dia)?)$/ {
+            sub ($_) { $_.IO.extension.lc ~~ %types{"image"} | %types{"video"} }
+        }
+        when /^d(ir(ectory)?)?$/ {
+            *.IO.d;
+        }
         default {
-            say "filter: unknown type \"$type\". Try instead: audio, video, image, directory";
+            say "filter: unknown type \"$type\". Try instead: audio, image, video, media, or directory";
             exit 1;
         }
     }
-    for $*IN.lines() {
-        if $func($_) {
-            .say;
-        }
+    for $*IN.lines {
+        .say when $func($_);
     }
 }

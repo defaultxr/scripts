@@ -13,7 +13,7 @@ set uname (uname)
 
 set selection (if test -n "$_flag_p"; echo -n primary; else; echo -n clipboard; end)
 
-if test "$argv[1]" = '-'
+if test -n "$_flag_i"; or contains -- '-' $argv
     if test "$uname" = 'Darwin'
         pbcopy
     else

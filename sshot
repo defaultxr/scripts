@@ -15,25 +15,25 @@
 
 # code:
 
-set region 0
-set clipboard 1
+argparse -n sshot 'h/help' 's/select' 'C/no-clipboard' -- $argv
+
+if test -n "$_flag_h"
+    echo "sshot - Take a screenshot."
+    echo "Usage: sshot [arguments]"
+    echo
+    echo "  -h/--help         - Print help and exit."
+    echo "  -s/--select       - Select a region to screenshot rather than the entire screen."
+    echo "  -C/--no-clipboard - Don't copy the screenshot's path to the clipboard."
+    exit
+end
 
 function filedate
     echo (date '+%Y-%m-%d-%H%M%S')
 end
 
-for i in $argv
-    if test $i = '-s'
-        set region 1
-    end
-    if test $i = '-C'
-        set clipboard 0
-    end
-end
-
 # using scrot for now because imagemagick's images fuck up weirdly with twitter
 
-if test $region -eq 1
+if test -n "$_flag_s"
     slop -f "%g " | read G
     set GX (string split '+' $G | head -1)
     set filename ~/(filedate)_$GX.png
@@ -48,6 +48,6 @@ else
     # import -window root $filename
 end
 
-if test $clipboard -eq 1
-    echo $filename | xclip -i -selection clip
+if test -z "$_flag_C"
+    echo $filename | c -i
 end

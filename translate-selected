@@ -1,18 +1,23 @@
 #!/usr/bin/env fish
-# translate-selected - translate the selected text, showing the result with a popup dialog
-# Requirements: translate-shell, xclip, zenity
+# translate-selected - translate the selected text, showing the result in a popup dialog.
+# Requirements: translate-shell, xclip, text-gui (part of defaultxr/scripts)
 # See also: define-selected
 
 argparse -n translate-selected 'h/help' -- $argv
 
 if test -n "$_flag_h"
-    echo "translate-selected - translate the selected text, showing the result with a popup dialog."
+    echo "translate-selected - translate the selected text, showing the result in a popup dialog."
     echo "Usage: translate-selected [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
     exit
 end
 
-set translation (xclip -o -selection primary | trans -brief | string collect)
+set translation (xclip -o -selection primary | trans -brief 2>/tmp/translate-selected-err.txt | string collect)
 
-zenity --info --width=800 --text="$translation"
+if text -z "$translation"
+    set translation (cat /tmp/translate-selected-err.txt)
+end
+
+# zenity --info --width=800 --text="$translation"
+text-gui -T "selected text translation" --text="$translation"

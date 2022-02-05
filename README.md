@@ -24,7 +24,7 @@ They're written in a variety of languages, but mostly [fish](https://fishshell.c
 * `sshot` (fish) - take a screenshot of the whole screen or of a region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
 * `ssuspend` (fish) - suspend your monitor(s).
 * `tag-gui` (python) - edit the [`tmsu`](https://github.com/oniony/TMSU) tags for a file with a tab-completing gui.
-* `translate-selected` (fish) - pop up a window showing the translation of the selected text.
 * `text-gui` (python) - show arbitrary text in a popup window.
+* `translate-selected` (fish) - translate the selected text, showing the result in a popup dialog.
 * `v` (fish) - view images or directories of images with [`nsxiv`](https://github.com/nsxiv/nsxiv). passes the rest of the images in the directory as well.
 * `vol` (fish) - change alsa volume conveniently and intuitively.

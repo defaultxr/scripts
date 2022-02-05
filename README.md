@@ -25,5 +25,6 @@ They're written in a variety of languages, but mostly [fish](https://fishshell.c
 * `ssuspend` (fish) - suspend your monitor(s).
 * `tag-gui` (python) - edit the [`tmsu`](https://github.com/oniony/TMSU) tags for a file with a tab-completing gui.
 * `translate-selected` (fish) - pop up a window showing the translation of the selected text.
+* `text-gui` (python) - show arbitrary text in a popup window.
 * `v` (fish) - view images or directories of images with [`nsxiv`](https://github.com/nsxiv/nsxiv). passes the rest of the images in the directory as well.
 * `vol` (fish) - change alsa volume conveniently and intuitively.

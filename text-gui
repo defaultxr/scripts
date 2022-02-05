@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+# text-gui - simple utility to show input text in a GUI.
+# may be useful as part of scripts bound to window manager shortcuts or the like.
+
+# TODO:
+# - ctrl+s to save to a file?
+
+import os, argparse
+from sys import stdin
+from tkinter import *
+from tkinter import scrolledtext
+import tkinter.font as tkFont
+
+# settings (defaults; can be overridden by arguments)
+
+default_width = 700
+default_height = 800
+default_max_width = 700
+default_max_height = 800
+
+# code
+
+def changeFontSize(font, change):
+  """Add CHANGE to the size of the font."""
+  font.configure(size=font["size"]+change)
+
+def makeWindow(text, title=None, width=default_width, height=default_height, max_width=default_max_width, max_height=default_max_height):
+  root = Tk()
+  root.title(title or "text-gui")
+  root.minsize(width, height)
+  if max_width:
+    root.maxsize(max_width, max_height)
+
+  font = tkFont.Font(size=12)
+
+  if title:
+    label = Label(root, text=title, font=tkFont.Font(size=13), bg="#111", fg="#eee")
+    label.pack(fill=X)
+
+  textbox = scrolledtext.ScrolledText(root, font=font, bg="#320", fg="#38f")
+  textbox.pack(fill=BOTH, expand=True)
+  textbox.insert(END, text)
+
+  root.bind("<Control-equal>", lambda e: changeFontSize(font, 1))
+  root.bind("<Control-minus>", lambda e: changeFontSize(font, -1))
+
+  root.bind("<Escape>", lambda e: quit())
+  root.bind("<Control-g>", lambda e: quit())
+
+  root.mainloop()
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description="Show text in a graphical window.")
+  parser.add_argument("-T", "--title", dest="title", help="the title of the window")
+  parser.add_argument("-t", "--text", dest="text", help="the text of the window; if not provided, will be read from stdin")
+  parser.add_argument("-W", "--width", dest="width", type=int, help="the window's initial width")
+  parser.add_argument("-H", "--height", dest="height", type=int, help="the window's initial height")
+  parser.add_argument("--max-width", dest="max_width", type=int, help="the window's max width")
+  parser.add_argument("--max-height", dest="max_height", type=int, help="the window's max height")
+
+  args = parser.parse_args()
+
+  text = args.text or stdin.read()
+  title = args.title
+  width = args.width or default_width
+  height = args.height or default_height
+  max_width = args.max_width or default_max_width
+  max_height = args.max_height or default_max_height
+
+  makeWindow(text, title=title, width=width, height=height, max_width=max_width, max_height=max_height)

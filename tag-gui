@@ -92,6 +92,9 @@ def make_title(files):
 def tmsu_dir(path):
   """Starting from PATH, look up in the directory tree to find the directory containing the .tmsu directory. Returns None if it could not be found."""
   tries = 100 # failsafe in case we're trapped in some kind of strange directory loop(?)
+  if not os.path.isdir(path):
+    path = os.path.dirname(path)
+  os.chdir(path)
   while tries > 0:
     if os.path.exists('./.tmsu'):
       return os.path.realpath(os.curdir)

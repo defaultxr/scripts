@@ -15,7 +15,7 @@ if test -n "$_flag_h"
 end
 
 function get_ext -d "Get the file extension of the input, or nothing if none found."
-    string match -qr -- '^.+(?<ext>\\..+)$' $argv[1]
+    string match -qr -- '^.+(?<ext>\\.[^.]+)$' "$argv[1]"
     echo "$ext"
 end
 
@@ -23,7 +23,7 @@ set script (basename (status filename))
 set input $argv[1]
 set orig (basename $input)
 set full_orig (realpath $input)
-set ext (get_ext $input)
+set pext (get_ext $input)
 set dir (dirname $full_orig)
 
 set preserve (if test -n "$_flag_e"; echo -n ""; else; echo -n " (preserving extension)"; end)
@@ -31,10 +31,12 @@ set preserve (if test -n "$_flag_e"; echo -n ""; else; echo -n " (preserving ext
 set new (zenity --entry --text="Rename '$orig'$preserve to:" --entry-text="$orig")
 
 if test $status -eq 0
-    if test -z "$_flag_e"
-        set new "$new$ext"
+    if test -z "$_flag_e"; and test -z (get_ext $new)
+        set new "$new$pext"
     end
-    mv "$full_orig" "$dir/$new"
+    if not test "$full_orig" = "$dir/$new"
+        mv "$full_orig" "$dir/$new"
+    end
     if test -z "$_flag_q"
         set_color yellow
         echo -n "$script: "

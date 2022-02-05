@@ -1,9 +1,20 @@
 #!/usr/bin/env fish
-# automatically correct the rotation for an image
+# automatically correct image rotation based on its metadata.
 # some software will write rotation information into an image incorrectly
 # which causes the image to show up wrong in other programs.
 # this script corrects that for each image provided as an argument.
 # it also outputs the filename of the result to stdout.
+
+argparse -n auto-rotate-image 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "auto-rotate-image - automatically correct image rotation based on its metadata."
+    echo "Accepts the path to the image as an argument and outputs the filename of the result."
+    echo "Usage: auto-rotate-image IMAGE [IMAGE ...]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
 
 mkdir -p /tmp/images-autorotated/
 for i in $argv

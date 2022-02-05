@@ -319,7 +319,7 @@ def ret(event):
 def set_selection(index):
   """Set the current selection of the completions listbox to the one with the specified index."""
   listbox.selection_clear(0, END)
-  if index:
+  if index != None:
     index = min(max(0, index), len(listbox.get(0, END))-1)
     listbox.selection_set(index)
     listbox.see(index)

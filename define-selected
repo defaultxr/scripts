@@ -1,0 +1,24 @@
+#!/usr/bin/env fish
+# define-selected - define the selected text, showing the result in a popup dialog.
+# Requirements: dictd, xclip, text-gui (part of defaultxr/scripts)
+# See also: translate-selected
+
+argparse -n define-selected 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "define-selected - define the selected text, showing the result in a popup dialog."
+    echo "Usage: define-selected [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set word (xclip -o -selection primary)
+set definition (dict $word 2>/tmp/define-selected-err.txt | tail -n +5 | string collect)
+
+if test -z "$definition"
+    set definition (cat /tmp/define-selected-err.txt)
+end
+
+# zenity --info --width=800 --text="$definition"
+text-gui -T "\"$word\" definition" --text="$definition"

@@ -9,6 +9,7 @@ They're written in a variety of languages, but mostly [fish](https://fishshell.c
 * `a2v` (fish) - "audio to video". generate a video from a sound file and an image. useful, for example, if you want to upload a track to youtube.
 * `auto-rotate-image` (fish) - correct broken rotation in image files.
 * `c` (fish) - convenient interface to the clipboard.
+* `define-selected` (fish) - define the selected text, showing the result in a popup dialog.
 * `filter` (raku) - filter a list of filenames (stdin separated by newlines), outputting only those whose extensions match a specified type.
 * `loc` (fish) - locate files by searching their names case-insensitively with [`bfs`](https://github.com/tavianator/bfs) or `find`.
 * `locate-dominating-file` (fish) - look up in the directory hierarchy for a specified file.

@@ -7,7 +7,17 @@
 
 # settings:
 
+# whether to print extra debugging output to stdout.
 debug_output = False
+
+# whether or not to show a notification when saving tags about the tags saved.
+show_notification = False
+
+# when saving tags, if show_notification is on, which tags should we mention about saving? should be an array of one or more of: 'added', 'removed', or 'new'.
+notify_about = ['added', 'removed', 'new']
+
+# list of path abbreviations that should be replaced in filenames in the title/OSD/etc. each element should be a 2-element list in the form [STRING, REPLACEMENT]. it's not necessary to include your home directory as it is automatically replaced with "~".
+path_abbreviations = []
 
 # code:
 
@@ -57,41 +67,25 @@ def set_clipboard(text):
 
 # osd-related
 
-def osd_notify_gosd(text):
+def osd_notify(text, title=None):
   """Send TEXT to the OSD to notify the user."""
-  f = os.popen("python /home/modula/misc/gosd.py/gosd_go.py -", 'w')
-  f.write(text)
-  f.close()
-
-def osd_notify(text):
-  """Send TEXT to the OSD to notify the user."""
-  subprocess.run(['notify-send', 'TMSU', text])
+  title = title or "tag-gui - " + make_title(files)
+  subprocess.run(['notify-send', title, text])
 
 # directories / filenames
 
-def common_dir(files):
-  """Find the common directory that all of the files are under."""
-  base = files[0]
-  slash = 0
-  while slash != -1:
-    nslash = base.find('/', slash+1)
-    if nslash == -1:
-      break
-    else:
-      slash = nslash
-    test = base[:slash]
-    for i in files:
-      if i[:slash] != base[:slash]:
-          slash = -1
-          break
-  return base[:slash]
+def abbreviate_path(path): # FIX: remove my dirs from the public version, maybe just make it configurable
+  """Abbreviate PATH as much as possible by swapping the home directory path for ~ and the abbreviations in the \"path_abbreviations\" variable."""
+  for abbr in path_abbreviations:
+    path = path.replace(abbr[0], abbr[1])
+  return path.replace(os.path.expanduser('~'), '~')
 
-def abbreviate_path(files):
-  """Get a summary of a list of files."""
+def make_title(files):
+  """Generate a summary of the file(s) being tagged."""
   if len(files) == 1:
-    return files[0].replace('/media/music/', 'm/').replace('/home/modula/misc/Ptest/', 'p/')
+    return abbreviate_path(files[0])
   else:
-    return str(len(files)) + " files under " + common_dir(files)
+    return str(len(files)) + " files under " + abbreviate_path(os.path.commonpath(files))
 
 # tmsu / tags
 
@@ -136,25 +130,29 @@ def save_tags(newtags):
   """Save NEWTAGS as the tags for the specified files."""
   global tags
   output = []
+  new_tags = []
   add_tags = missing_items(newtags, tags)
   if add_tags:
     debug("Add tags:", add_tags)
-    output += ["Added tags: " + ' '.join(add_tags)]
     subp = subprocess.run(['tmsu', 'tag', '--tags=' + ' '.join(add_tags), *files], stderr=subprocess.PIPE)
     tmsu_out = subp.stderr.decode('utf8')
     if tmsu_out:
       debug("tmsu_out:", tmsu_out)
-      new_tags = []
       for i in tmsu_out.split('\n'):
         if i.startswith('tmsu: new tag '):
           new_tags += [i[14:].removeprefix("'").removesuffix("'")]
-      output += ["New tags: " + ' '.join(new_tags)]
   remove_tags = missing_items(tags, newtags)
   if remove_tags:
     debug("Remove tags:", remove_tags)
-    output += ["Removed tags: " + ' '.join(remove_tags)]
     subprocess.run(['tmsu', 'untag', '--tags=' + ' '.join(remove_tags), *files])
-  if output:
+  if show_notification:
+    output = []
+    if add_tags and 'added' in notify_about:
+      output += ["Added tags: " + ' '.join(add_tags)]
+    if remove_tags and 'removed' in notify_about:
+      output += ["Removed tags: " + ' '.join(remove_tags)]
+    if new_tags and 'new' in notify_about:
+      output += ["New tags: " + ' '.join(new_tags)]
     osd_notify('\n'.join(output))
 
 # callbacks / gui actions
@@ -202,10 +200,7 @@ def update_completions():
     matching = tags_matching(cursor_tag)
   for tag in matching:
     listbox.insert(END, tag)
-  # print("tagsinput.xview(): " + str(tagsinput.xview()))
-  # print("get_cursor_pos(): " + str(get_cursor_pos()))
   ind = get_cursor_pos()
-  # leng = len(txt)
   xview(ind)
   if len(matching) == 1:
     set_selection(0)
@@ -426,7 +421,7 @@ if __name__ == '__main__':
   else:
     os.chdir(cddir)
   alltags = get_all_tags()
-  title = abbreviate_path(files)
+  title = make_title(files)
   make_gui()
   root.title("Tagging " + title + "...")
   label['text'] = title

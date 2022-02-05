@@ -1,0 +1,443 @@
+#!/usr/bin/env python
+# tag-gui - a simple python+tkinter-based GUI for tagging one or more files using TMSU.
+# shows the filename (or the common directory if tagging multiple) and the previous set of tags, and allows you to edit the set, with tab-completion of tag names.
+
+# TODO:
+# - make the completions list sort by the number of uses each tag has (and also show the number next to each tag)
+
+# settings:
+
+debug_output = False
+
+# code:
+
+import os, sys, subprocess
+from tkinter import *
+from tkinter import ttk, messagebox
+import tkinter.font as tkFont
+
+# utilities
+
+def debug(*items):
+  """Print ITEMS to standard output if debug_output is True."""
+  global debug_output
+  if debug_output:
+    print(*items)
+
+def common_prefix(items):
+  """Get the longest string shared by the start of all elements in ITEMS."""
+  if items == []:
+    return ''
+  if len(items) == 1:
+    return items[0]
+  n = 0
+  while True:
+    for item in items:
+      if item[:n+1] != items[0][:n+1]:
+        return items[0][:n]
+    n = n + 1
+
+def common_items(*lists):
+  """Get a list of all items that exist in all of the provided lists."""
+  res = set(lists[0])
+  for i in lists[1:]:
+    res = set(i).intersection(res)
+  return list(res)
+
+def missing_items(list_a, list_b):
+  """Get a list of items in LIST_A that don't exist in LIST_B."""
+  return list(set(list_a).difference(set(list_b)))
+
+# clipboard
+
+def set_clipboard(text):
+  """Set the system clipboard's text to TEXT."""
+  root.clipboard_clear()
+  root.clipboard_append(text)
+
+# osd-related
+
+def osd_notify_gosd(text):
+  """Send TEXT to the OSD to notify the user."""
+  f = os.popen("python /home/modula/misc/gosd.py/gosd_go.py -", 'w')
+  f.write(text)
+  f.close()
+
+def osd_notify(text):
+  """Send TEXT to the OSD to notify the user."""
+  subprocess.run(['notify-send', 'TMSU', text])
+
+# directories / filenames
+
+def common_dir(files):
+  """Find the common directory that all of the files are under."""
+  base = files[0]
+  slash = 0
+  while slash != -1:
+    nslash = base.find('/', slash+1)
+    if nslash == -1:
+      break
+    else:
+      slash = nslash
+    test = base[:slash]
+    for i in files:
+      if i[:slash] != base[:slash]:
+          slash = -1
+          break
+  return base[:slash]
+
+def abbreviate_path(files):
+  """Get a summary of a list of files."""
+  if len(files) == 1:
+    return files[0].replace('/media/music/', 'm/').replace('/home/modula/misc/Ptest/', 'p/')
+  else:
+    return str(len(files)) + " files under " + common_dir(files)
+
+# tmsu / tags
+
+def tmsu_dir(path):
+  """Starting from PATH, look up in the directory tree to find the directory containing the .tmsu directory. Returns None if it could not be found."""
+  tries = 100 # failsafe in case we're trapped in some kind of strange directory loop(?)
+  while tries > 0:
+    if os.path.exists('./.tmsu'):
+      return os.path.realpath(os.curdir)
+    else:
+      tries = tries - 1
+      if os.pardir == os.path.realpath(os.curdir):
+        return None
+      else:
+        os.chdir(os.pardir)
+  return None
+
+def get_all_tags():
+  """Get a list of all tags from TMSU."""
+  return os.popen('tmsu tags').read().split()
+
+def file_tags(file):
+  """Get a list of tags that FILE is tagged with."""
+  file = os.path.realpath(file)
+  subp = subprocess.run(['tmsu', 'tags', file], stdout=subprocess.PIPE)
+  tags = subp.stdout.decode('utf8')
+  return tags[tags.rfind(':')+2:].split()
+
+def tags_matching(input):
+  """Get a list of tags matching INPUT, sorted so that tags that begin with INPUT are listed first."""
+  res = []
+  for tag in alltags:
+    if input in tag:
+      res = res + [tag]
+  for n, i in enumerate(res):
+    if i[:len(input)] == input:
+      res = res[n:] + res[:n]
+      break
+  return res
+
+def save_tags(newtags):
+  """Save NEWTAGS as the tags for the specified files."""
+  global tags
+  output = []
+  add_tags = missing_items(newtags, tags)
+  if add_tags:
+    debug("Add tags:", add_tags)
+    output += ["Added tags: " + ' '.join(add_tags)]
+    subp = subprocess.run(['tmsu', 'tag', '--tags=' + ' '.join(add_tags), *files], stderr=subprocess.PIPE)
+    tmsu_out = subp.stderr.decode('utf8')
+    if tmsu_out:
+      debug("tmsu_out:", tmsu_out)
+      new_tags = []
+      for i in tmsu_out.split('\n'):
+        if i.startswith('tmsu: new tag '):
+          new_tags += [i[14:].removeprefix("'").removesuffix("'")]
+      output += ["New tags: " + ' '.join(new_tags)]
+  remove_tags = missing_items(tags, newtags)
+  if remove_tags:
+    debug("Remove tags:", remove_tags)
+    output += ["Removed tags: " + ' '.join(remove_tags)]
+    subprocess.run(['tmsu', 'untag', '--tags=' + ' '.join(remove_tags), *files])
+  if output:
+    osd_notify('\n'.join(output))
+
+# callbacks / gui actions
+
+def get_end_pos():
+  """Get the length of the text in the input field."""
+  return len(get_input_text())
+
+def get_cursor_pos():
+  """Get the integer position of the cursor in the text input field."""
+  return int(tagsinput.index(INSERT).split('.')[1])
+
+def set_cursor_pos(pos):
+  """Set the cursor position in the text input field."""
+  if type(pos) == int:
+    pos = "1." + str(pos)
+  tagsinput.mark_set(INSERT, pos)
+
+def get_input_text():
+  """Get the string of text in the input field."""
+  return ''.join(map(lambda x: x[1], tagsinput.dump('1.0', END, text=True)))[:-1]
+
+def set_input_text(text):
+  """Set the input field's text to TEXT."""
+  tagsinput.delete('1.0', END)
+  tagsinput.insert('1.0', text)
+
+def xview(index):
+  """Scroll the text input field to view the specified index."""
+  tagsinput.xview_scroll(max(0, index-50), 'units')
+
+def update_completions():
+  """Update the listbox to show suggested completions based on the word next to the cursor in the text input field."""
+  pos = get_cursor_pos()
+  txt = get_input_text()
+  listbox.delete(0, END)
+  if txt == '' or txt[pos-1] == ' ':
+    matching = alltags
+  else:
+    prev_space = txt.rfind(' ', 0, pos)
+    next_space = txt.find(' ', pos)
+    if next_space == -1:
+      next_space = len(txt)
+    cursor_tag = txt[prev_space+1:next_space]
+    matching = tags_matching(cursor_tag)
+  for tag in matching:
+    listbox.insert(END, tag)
+  # print("tagsinput.xview(): " + str(tagsinput.xview()))
+  # print("get_cursor_pos(): " + str(get_cursor_pos()))
+  ind = get_cursor_pos()
+  # leng = len(txt)
+  xview(ind)
+  if len(matching) == 1:
+    set_selection(0)
+  else:
+    set_selection(None)
+
+def update_highlighting():
+  """Highlight unknown tags in red in the text input field, to make possible spelling errors more obvious."""
+  tagsinput.tag_remove('nonexistent', '1.0', END)
+  txt = get_input_text()
+  words = txt.split()
+  start = 0
+  for word in words:
+    loc = txt.find(word, start)
+    start = loc + len(word)
+    if not word in alltags:
+      tagsinput.tag_add('nonexistent', '1.' + str(loc), '1.' + str(loc + len(word)))
+
+def key_release(*ignored):
+  """Update the completions and the text highlighting after each keypress."""
+  global prev_cursor_loc
+  cursor = get_cursor_pos()
+  if cursor != prev_cursor_loc:
+    update_completions()
+    prev_cursor_loc = cursor
+  update_highlighting()
+
+def tag_at_cursor_indexes():
+  """Get the indexes of the tag near the cursor position, or None if the cursor is not near a word."""
+  cursor = get_cursor_pos()
+  txt = get_input_text()
+  if txt[cursor-1] == ' ':
+    return None
+  else:
+    prev_space = txt.rfind(' ', 0, cursor)
+    next_space = txt.find(' ', cursor)
+    if next_space == -1:
+      next_space = len(txt)
+    return [prev_space+1, next_space]
+
+def tag_at_cursor():
+  """Get the tag near the cursor position, or None if the cursor is not near a word."""
+  indexes = tag_at_cursor_indexes()
+  if indexes == None:
+    return None
+  else:
+    return get_input_text()[indexes[0]:indexes[1]]
+
+def replace_tag_at_cursor(text, complete=False):
+  """Remove the tag around the cursor if there is one, then insert TEXT at the cursor. Automatically adds spaces before and after the tag if necessary.
+
+If COMPLETE is true, the replacement should be considered a "complete" tag, and an extra space should be added afterwards."""
+  indexes = tag_at_cursor_indexes()
+  txt = get_input_text()
+  if indexes == None:
+    txt = txt + ' ' + text
+  else:
+    txt = txt[0:indexes[0]] + text + txt[indexes[1]:]
+  set_input_text(txt)
+  new_cursor = tag_at_cursor_indexes()[1]
+  if complete and (new_cursor == len(txt)):
+    set_input_text(txt + ' ')
+    new_cursor = new_cursor + 1
+  set_cursor_pos(new_cursor)
+
+def move_cursor_by_word(num=1):
+  """Move the cursor by NUM words relative to its current position by simulating ctrl+right or ctrl+left keypress(es)."""
+  key = '<Control-Right>'
+  if num < 0:
+    key = '<Control-Left>'
+  for idx in range(abs(num)):
+    tagsinput.event_generate(key)
+
+def forward_word(event):
+  """Move the cursor forward a word."""
+  move_cursor_by_word(1)
+
+def backward_word(event):
+  """Move the cursor backward a word."""
+  move_cursor_by_word(-1)
+
+def tab(event):
+  """Activate completion of the current input based on the selected item in the completions listbox."""
+  curselection = listbox.curselection()
+  cursor = get_cursor_pos()
+  txt = get_input_text()
+  if len(curselection) == 0:
+    if (cursor == get_end_pos()) or (txt[cursor] == ' '):
+      current = tag_at_cursor()
+      if not current:
+        return "break"
+      curlen = len(current)
+      # here we remove any that don't start with the current input, since we only want to complete based on the start of the input, but the completions box shows items that have the current input ANYWHERE in them.
+      citems = list(filter(lambda i: i[:curlen] == current, listbox.get(0, END)))
+      cpre = common_prefix(citems)
+      if cpre != '':
+        replace_tag_at_cursor(cpre, len(citems) == 1)
+    return "break"
+  selected_completion = listbox.get(curselection[0])
+  if selected_completion == '':
+    return "break"
+  replace_tag_at_cursor(selected_completion, True)
+  tagsinput.focus()
+  return "break"
+
+def ret(event):
+  """Commit the tags inputted and save them to the specified files."""
+  save_tags(get_input_text().split())
+  quit()
+
+def set_selection(index):
+  """Set the current selection of the completions listbox to the one with the specified index."""
+  listbox.selection_clear(0, END)
+  if index:
+    index = min(max(0, index), len(listbox.get(0, END))-1)
+    listbox.selection_set(index)
+    listbox.see(index)
+
+def move_selection(direction=1):
+  """Move the currently-selected item in the completions listbox by DIRECTION items, relative to the current selection."""
+  cur = listbox.curselection()
+  sel = None
+  length = len(listbox.get(0, END))
+  if cur == ():
+    if direction == 1:
+      sel = 0
+    else:
+      sel = length
+  else:
+    cur = cur[0]
+    if (cur == (length-1) and direction == 1) or (cur == 0 and direction == -1):
+      sel = None
+    else:
+      sel = cur + direction
+  set_selection(sel)
+  return 'break'
+
+def comma(ignored):
+  """Tags should be separated by spaces rather than commas, so we override the comma key to just insert a space instead."""
+  tagsinput.event_generate('<space>')
+  return "break"
+
+def ctrl_backspace(ignored):
+  """Delete the word to the left of the cursor."""
+  pos = get_cursor_pos()
+  txt = get_input_text()
+  next_space = txt.rfind(' ', 0, pos)+1
+  set_input_text(txt[:next_space] + txt[pos:])
+  set_cursor_pos(next_space)
+  return "break"
+
+# gui setup
+
+def make_gui():
+  """Make the actual GUI window."""
+  global root, mainframe, label, tagslabel, tagsinput, listbox, prev_cursor_loc
+  prev_cursor_loc = 0
+
+  root = Tk(className="tag-gui")
+
+  mainframe = ttk.Frame(root)
+  mainframe.pack(fill=BOTH, expand=True)
+
+  label = ttk.Label(mainframe, text="Tagging...")
+  label.pack(fill=X, expand=True)
+
+  tagslabel = ttk.Label(mainframe, text="Original tags: ...")
+  tagslabel.pack(fill=X, expand=True)
+
+  tagsinput = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9))
+  tagsinput.pack(fill=X, expand=True)
+  tagsinput.bind('<Tab>', tab)
+  tagsinput.bind('<Return>', ret)
+  tagsinput.tag_configure('nonexistent', foreground='red')
+
+  listbox = Listbox(mainframe, selectmode=SINGLE)
+  listbox.pack(fill=BOTH, expand=True)
+
+  root.bind('<Return>', ret)
+  root.bind('<Tab>', tab)
+  root.bind('<Escape>', lambda e: quit())
+  root.bind('<Up>', lambda e: move_selection(-1))
+  root.bind('<Down>', lambda e: move_selection(1))
+  root.bind('<Control-p>', lambda e: move_selection(-1))
+  root.bind('<Control-n>', lambda e: move_selection(1))
+  root.bind('<Control-BackSpace>', ctrl_backspace)
+  root.bind('<Alt-b>', backward_word)
+  root.bind('<Alt-f>', forward_word)
+  tagsinput.bind('<KeyRelease>', key_release)
+  tagsinput.bind('<comma>', comma)
+
+  tagsinput.focus()
+  root.minsize(500, 120)
+  root.maxsize(800, 120)
+
+# main
+
+if __name__ == '__main__':
+  global root, files, alltags, tags
+  if len(sys.argv) > 1:
+    tmpfiles = sys.argv[1:]
+  else:
+    tmpfiles = []
+    for i in sys.stdin.readlines():
+      tmpfiles = tmpfiles + [i.rstrip()]
+  files = []
+  for i in tmpfiles:
+    files = files + [os.path.realpath(i)]
+  if len(files) == 0:
+    print("No files provided; exiting...")
+    exit(1)
+  cddir = tmsu_dir(files[0])
+  if cddir == None:
+    err = "Can't tag this file (%s) as it does not appear to be within a TMSU directory." % files[0]
+    print(err)
+    messagebox.showerror("TMSU error", err)
+    exit(1)
+  else:
+    os.chdir(cddir)
+  alltags = get_all_tags()
+  title = abbreviate_path(files)
+  make_gui()
+  root.title("Tagging " + title + "...")
+  label['text'] = title
+  tags = []
+  for file in files:
+    tags = tags + [file_tags(file)]
+  tags = common_items(*tags)
+  tags.sort()
+  tagstxt = ' '.join(tags)
+  tagslabel['text'] = "Original tags: " + tagstxt
+  if not tags == []:
+    set_input_text(tagstxt + ' ')
+  set_cursor_pos(END)
+  root.mainloop()

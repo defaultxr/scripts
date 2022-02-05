@@ -1,8 +1,8 @@
 # scripts
 
-Various small scripts I've written.
+A collection of various convenience scripts I've written for myself.
 
-Each script contains usage information and examples in its source. Some of the scripts also have configuration options that you may need or want to change.
+Each script contains usage information in its source, and most of them also support `-h`/`--help` to display a basic summary on the command line. Some of the scripts also have configuration options at the top that you may need or want to change.
 
 They're written in a variety of languages, but mostly [fish](https://fishshell.com/) because fish is great.
 
@@ -24,5 +24,5 @@ They're written in a variety of languages, but mostly [fish](https://fishshell.c
 * `sshot` (fish) - take a screenshot of the whole screen or of a region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
 * `ssuspend` (fish) - suspend your monitor(s).
 * `translate-selected` (fish) - pop up a window showing the translation of the selected text.
-* `v` (fish) - view images or directories of images with [nsxiv](https://github.com/nsxiv/nsxiv). passes the rest of the images in the directory as well.
+* `v` (fish) - view images or directories of images with [`nsxiv`](https://github.com/nsxiv/nsxiv). passes the rest of the images in the directory as well.
 * `vol` (fish) - change alsa volume conveniently and intuitively.

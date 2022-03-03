@@ -1,0 +1,20 @@
+#!/usr/bin/env fish
+# abbreviate-path - abbreviate the path passed as an argument.
+
+argparse -n abbreviate-path 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "abbreviate-path - abbreviate the path passed as an argument."
+    echo "Usage: abbreviate-path [arguments] PATH"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+if test -z "$HOME"
+    echo $argv
+else
+    string replace -r "^$HOME" '~' $argv
+end | string replace -r '^/home/(.+)$' '~$1'
+
+true

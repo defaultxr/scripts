@@ -52,7 +52,7 @@ function make-title -d "Return a title string for the nsxiv window."
     else
         set title "v "(realpath $args)
     end
-    set title (echo $title | sed 's@/home/modula@~@' | sed 's@/f-anime/@/f-a/@'| sed 's@~/misc/Ptest/@~/m/P/@')
+    set title (abbreviate-path $title)
     echo $title
 end
 

@@ -7,6 +7,7 @@ Each script contains usage information in its source, and most of them also supp
 They're written in a variety of languages, but mostly [fish](https://fishshell.com/) because fish is great.
 
 * `a2v` (fish) - "audio to video". generate a video from a sound file and an image. Useful, for example, to upload music to YouTube.
+* `abbreviate-path` (fish) - abbreviate the path passed as an argument.
 * `auto-rotate-image` (fish) - correct broken rotation in image files.
 * `c` (fish) - convenient interface to the clipboard.
 * `define-selected` (fish) - define the selected text, showing the result in a popup dialog.

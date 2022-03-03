@@ -6,7 +6,7 @@ Each script contains usage information in its source, and most of them also supp
 
 They're written in a variety of languages, but mostly [fish](https://fishshell.com/) because fish is great.
 
-* `a2v` (fish) - "audio to video". generate a video from a sound file and an image. useful, for example, if you want to upload a track to youtube.
+* `a2v` (fish) - "audio to video". generate a video from a sound file and an image. Useful, for example, to upload music to YouTube.
 * `auto-rotate-image` (fish) - correct broken rotation in image files.
 * `c` (fish) - convenient interface to the clipboard.
 * `define-selected` (fish) - define the selected text, showing the result in a popup dialog.
@@ -23,7 +23,7 @@ They're written in a variety of languages, but mostly [fish](https://fishshell.c
 * `romanize` (python) - romanize Japanese text to help with learning pronunciation.
 * `run-if-not` (fish) - run a program only if it isn't already running.
 * `sshot` (fish) - take a screenshot of the whole screen or of a region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
-* `ssuspend` (fish) - suspend your monitor(s).
+* `ssuspend` (fish) - "screen suspend"; power off your monitor(s).
 * `tag-gui` (python) - edit the [`tmsu`](https://github.com/oniony/TMSU) tags for a file with a tab-completing gui.
 * `text-gui` (python) - show arbitrary text in a popup window.
 * `translate-selected` (fish) - translate the selected text, showing the result in a popup dialog.

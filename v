@@ -59,12 +59,12 @@ end
 if test (count $argv) -eq 0 # no args.
     v .
 else if test (count $argv) -gt 1 # more than one argument
-    exec nsxiv $flags -T (make-title) $argv # FIX: directories don't work for this
+    exec env NSXIV_TITLE=(make-title) nsxiv $flags $argv # FIX: directories don't work for this
 else if test $argv[1] = '-' # argument was '-' - read list of files from stdin.
-    exec nsxiv $flags -T (make-title) -i
+    exec env NSXIV_TITLE=(make-title) nsxiv $flags -i
 else if test -d $argv[1] # it's a directory - view all images inside.
     # exec nsxiv $argv[1]
-    find-images $argv[1] | nsxiv $flags -T (make-title) -i
+    find-images $argv[1] | env NSXIV_TITLE=(make-title) nsxiv $flags -i
     exit
 else if test -f $argv[1] # it's a file - view all images in that directory, showing the file first.
     set dir (dirname $argv[1])
@@ -78,5 +78,5 @@ else if test -f $argv[1] # it's a file - view all images in that directory, show
     end
     for i in $listing
         echo $i
-    end | nsxiv $flags $idx -T (make-title) -i
+    end | env NSXIV_TITLE=(make-title) nsxiv $flags $idx -i
 end

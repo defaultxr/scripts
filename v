@@ -27,56 +27,44 @@ set title "$_flag_T"
 
 set args $argv
 
-function indexof -d "Gets index of first argument in the list of the rest of the arguments."
-    set x 0
-    set needle (basename $argv[1])
-    for i in $argv[2..-1]
-        set x (expr $x + 1)
-        if test (basename $i) = $needle
-            echo -n $x
-            return
-        end
-    end
-    echo -n -1
+function find-images -d "Get the list of images in the specified directory."
+    find $argv[1]/ -maxdepth 1 \( -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' -or -iname '*.webp' \) -exec readlink -f {} \; | sort -n
 end
 
-function find-images -d "Finds images in the specified directory."
-    find $argv[1]/ -maxdepth 1 -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' -or -iname '*.webp' | sort -n
-end
-
-function make-title -d "Return a title string for the nsxiv window."
-    if test -n "$title"
-        set title "$title"
+function make-title -d "Echo a title string for the nsxiv window."
+    if test -n "$_flag_T"
+        echo "$_flag_T"
     else if test (count $args) -lt 1
-        set title "v "(pwd)
+        echo "v "(abbreviate-path (pwd))
+    # else if test (count $args) = 1
+    #     echo "v "(abbreviate-path (realpath $args[1]))
     else
-        set title "v "(realpath $args)
+        echo "v"
     end
-    set title (abbreviate-path $title)
-    echo $title
 end
 
 if test (count $argv) -eq 0 # no args.
     v .
 else if test (count $argv) -gt 1 # more than one argument
-    exec env NSXIV_TITLE=(make-title) nsxiv $flags $argv # FIX: directories don't work for this
+    set -x NSXIV_TITLE (make-title)
+    exec nsxiv $flags $argv # FIX: directories don't work for this
 else if test $argv[1] = '-' # argument was '-' - read list of files from stdin.
-    exec env NSXIV_TITLE=(make-title) nsxiv $flags -i
+    set -x NSXIV_TITLE (make-title)
+    exec nsxiv $flags -i
 else if test -d $argv[1] # it's a directory - view all images inside.
     # exec nsxiv $argv[1]
-    find-images $argv[1] | env NSXIV_TITLE=(make-title) nsxiv $flags -i
+    set -x NSXIV_TITLE (make-title)
+    find-images $argv[1] | nsxiv $flags -i
     exit
 else if test -f $argv[1] # it's a file - view all images in that directory, showing the file first.
     set dir (dirname $argv[1])
     set listing (find-images $dir)
-    set idx (indexof $argv[1] $listing)
-    if test $idx = -1
-        echo "$argv[1] not found or unsupported image format."
-        set idx ""
-    else
-        set idx "-n $idx"
+    if not set idx (contains -i -- (readlink -f $argv[1]) $listing)
+        echo "v: $argv[1] not found or unsupported image format."
+        exit 1
     end
+    set -x NSXIV_TITLE (make-title)
     for i in $listing
         echo $i
-    end | env NSXIV_TITLE=(make-title) nsxiv $flags $idx -i
+    end | nsxiv $flags -n $idx -i
 end

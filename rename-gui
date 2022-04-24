@@ -50,7 +50,7 @@ if test $status -eq 0
 else
     if test -z "$_flag_q"
         set_color yellow
-        echo -n "$script: "
+        echo "$script: cancelled."
         set_color normal
     end
 end

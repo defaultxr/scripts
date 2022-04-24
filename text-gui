@@ -11,12 +11,21 @@ from tkinter import *
 from tkinter import scrolledtext
 import tkinter.font as tkFont
 
-# settings (defaults; can be overridden by arguments)
+# settings
 
+# dimensions (defaults; can be overridden by arguments)
 default_width = 700
 default_height = 800
 default_max_width = 700
 default_max_height = 800
+
+# theme
+text_fg = "#38f"
+text_bg = "#320"
+title_fg = "#eee"
+title_bg = "#111"
+scroll_fg = text_fg
+scroll_bg = text_bg
 
 # code
 
@@ -34,10 +43,11 @@ def makeWindow(text, title=None, width=default_width, height=default_height, max
   font = tkFont.Font(size=12)
 
   if title:
-    label = Label(root, text=title, font=tkFont.Font(size=13), bg="#111", fg="#eee")
+    label = Label(root, text=title, font=tkFont.Font(size=13), fg=title_fg, bg=title_bg)
     label.pack(fill=X)
 
-  textbox = scrolledtext.ScrolledText(root, font=font, bg="#320", fg="#38f")
+  textbox = scrolledtext.ScrolledText(root, font=font, fg=text_fg, bg=text_bg)
+  textbox.vbar.config(troughcolor=scroll_bg, bg=scroll_fg)
   textbox.pack(fill=BOTH, expand=True)
   textbox.insert(END, text)
 

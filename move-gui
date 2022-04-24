@@ -6,15 +6,28 @@
 
 # FIX - maybe this should be able to rename files too?
 
+set script (basename (status filename))
+
 if test (count $argv) -eq 0; or test "$argv[1]" = '-'
     set files (cat)
 else
     set files $argv
 end
 
+set count (count $files)
+
+if test $count -eq 0
+    zenity --info --title="$script Error" "No files"
+    exit 1
+else if test $count -eq 1
+    set title "Move $(basename $files[1]) To..."
+else
+    set title "Move $count Files To..."
+end
+
 set dir (realpath $files[1])
 
-set destination (zenity --file-selection --directory --filename=$dir)
+set destination (zenity --file-selection --title="$script: $title" --directory --filename="$dir")
 
 if test $status -ne 0
     exit 0

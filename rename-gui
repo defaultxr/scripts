@@ -28,7 +28,7 @@ set dir (dirname $full_orig)
 
 set preserve (if test -n "$_flag_e"; echo -n ""; else; echo -n " (preserving extension)"; end)
 
-set new (zenity --entry --text="Rename '$orig'$preserve to:" --entry-text="$orig")
+set new (zenity --entry --title="$script: $orig" --text="Rename '$orig'$preserve to:" --entry-text="$orig" --width=700)
 
 if test $status -eq 0
     if test -z "$_flag_e"; and test -z (get_ext $new)

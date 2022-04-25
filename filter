@@ -3,10 +3,13 @@
 # filter - filter a list of filenames, outputting only those whose extension denotes a specified "type".
 
 # usage:
-# filter <type>
+# filter [--print=FORMAT] <type>
 #
 # type can be: audio, image, video, visual (images and video), media (audio, images, and video), or directory
 # type can also be abbreviated to the first letter.
+#
+# if --print is provided, just print the list of extensions that would be used rather than filtering.
+# the format of --print output can be set to "find", "space", or "newline" (the default)
 
 # examples:
 
@@ -19,45 +22,72 @@
 # code:
 
 our %types := {
-    audio => "aac"|"aif"|"aiff"|"flac"|"m4a"|"mp3"|"ogg"|"opus"|"wav"|"wma",
-    image => "bmp"|"gif"|"jpeg"|"jpg"|"png"|"webp",
-    video => "avi"|"flv"|"m2t"|"m4v"|"mkv"|"mov"|"mp4"|"ogv"|"webm"|"wmv",
-    archive => "7z"|"bz2"|"gz"|"rar"|"tar"|"zip",
+    audio => qw/ aac aif aiff flac m4a mp3 ogg opus wav wma /,
+    image => qw/ bmp gif jpeg jpg png webp /,
+    video => qw/ avi flv m2t m4v mkv mov mp4 ogv webm wmv /,
+    archive => qw/ 7z bz2 gz rar tar zip /,
 };
 
-sub is-extension-type($filename, $type) {
-    $filename.IO.extension.lc ~~ %types{$type}
+sub normalize-type($_) {
+    return "audio" if /^(a(udio)?|mu(sic)?)$/;
+    return "image" if /^i(mages?)?$/;
+    return "video" if /^v(ideos?)?$/;
+    return "archive" if /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/;
+    return "visual" if /^(vis(ual)?|me(dia)?)$/;
+    return "directory" if /^d(ir(ectory)?)?$/;
+    fail "unknown type \"$_\"; Try instead: audio, image, video, archive, visual, or directory";
 }
 
-# sub normalize-type($_) {
+sub type-extensions($type is copy) {
+    #= Get a list of file extensions for TYPE.
+    $type = normalize-type($type);
+    if ($type eq "visual") {
+        return [|%types{"image"}, |%types{"video"}];
+    } else {
+        return %types{$type};
+    }
+}
 
-# }
+sub is-extension-type($filename, $type) {
+    $filename.IO.extension.lc ~~ any(|type-extensions($type));
+}
 
-sub MAIN($type="audio") {
+subset optval of Any where Str|True;
+
+multi sub MAIN(
+    Str $type is copy, #= the type to filter to
+    optval :$print, #= print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
+) {
+    given $print {
+        when any(qw/ find bfs /) {
+            type-extensions($type).map({ "-iname '*." ~ $_ ~ "'"}).join(" -or ").say;
+        }
+        when any(qw/ s sp space spaces /) {
+            type-extensions($type).join(" ").say;
+        }
+        default {
+            %types.say;
+            $type.say;
+            %types{$type}.say;
+            type-extensions($type).map(&say);
+        }
+    }
+}
+
+multi sub MAIN(
+    Str $type is copy, #= the type to filter to
+) {
+    $type = normalize-type($type);
+
     my $func = do given $type {
-        when /^(a(udio)?|mu(sic)?)$/ {
-            sub ($_) { &is-extension-type($_, "audio") }
-        }
-        when /^i(mages?)?$/ {
-            sub ($_) { &is-extension-type($_, "image") }
-        }
-        when /^v(ideos?)?$/ {
-            sub ($_) { &is-extension-type($_, "video") }
-        }
-        when /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/ {
-            sub ($_) { &is-extension-type($_, "archive") }
-        }
-        when /^(vis(ual)?|me(dia)?)$/ {
-            sub ($_) { $_.IO.extension.lc ~~ %types{"image"} | %types{"video"} }
-        }
-        when /^d(ir(ectory)?)?$/ {
+        when "directory" {
             *.IO.d;
         }
         default {
-            say "filter: unknown type \"$type\". Try instead: audio, image, video, media, or directory";
-            exit 1;
+            sub ($_) { is-extension-type($_, $type); }
         }
     }
+
     for $*IN.lines {
         .say when $func($_);
     }

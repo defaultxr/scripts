@@ -54,30 +54,26 @@ sub is-extension-type($filename, $type) {
 
 subset optval of Any where Str|True;
 
-multi sub MAIN(
+sub MAIN(
     Str $type is copy, #= the type to filter to
     optval :$print, #= print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
 ) {
-    given $print {
-        when any(qw/ find bfs /) {
-            type-extensions($type).map({ "-iname '*." ~ $_ ~ "'"}).join(" -or ").say;
-        }
-        when any(qw/ s sp space spaces /) {
-            type-extensions($type).join(" ").say;
-        }
-        default {
-            %types.say;
-            $type.say;
-            %types{$type}.say;
-            type-extensions($type).map(&say);
-        }
-    }
-}
-
-multi sub MAIN(
-    Str $type is copy, #= the type to filter to
-) {
     $type = normalize-type($type);
+
+    if ($print.defined) {
+        given $print {
+            when any(qw/ find bfs /) {
+                type-extensions($type).map({ "-iname '*." ~ $_ ~ "'"}).join(" -or ").say;
+            }
+            when any(qw/ s sp space spaces /) {
+                type-extensions($type).join(" ").say;
+            }
+            default {
+                type-extensions($type).map(&say);
+            }
+        }
+        exit;
+    }
 
     my $func = do given $type {
         when "directory" {

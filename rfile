@@ -1,11 +1,26 @@
 #!/usr/bin/env fish
-# rfile - output a random file in the current directory.
+# rfile - Output a random file in the current directory.
 # with an argument ARG, output a random file in any of a maximum of ARG subdirectories.
 
-if test (count $argv) = 0
-    set depth 1
+argparse -n rfile 'h/help' 'd/depth=' -- $argv
+
+if test -n "$_flag_h"
+    echo "rfile - Output a random file from the current directory and subdirectories."
+    echo "Usage: rfile [arguments] [depth]"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -d/--depth  - Set the depth of subdirectories to check (defaults to 1)."
+    exit
+end
+
+if test -n "$_flag_d"
+    set depth "$_flag_d"
 else
-    set depth $argv[1]
+    if test (count $argv) = 0
+        set depth 1
+    else
+        set depth $argv[1]
+    end
 end
 
 find -maxdepth $depth | shuf | head -1

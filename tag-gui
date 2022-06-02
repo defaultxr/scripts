@@ -156,6 +156,8 @@ def save_tags(newtags):
       output += ["Removed tags: " + ' '.join(remove_tags)]
     if new_tags and 'new' in notify_about:
       output += ["New tags: " + ' '.join(new_tags)]
+    if len(output) == 0:
+      output += ["(No changes)"]
     osd_notify('\n'.join(output))
 
 # callbacks / gui actions

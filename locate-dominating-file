@@ -5,7 +5,16 @@
 # with the -s or --silent argument, don't print anything to stdout.
 # inspired by the emacs function of the same name.
 
-argparse -n locate-dominating-file 's/silent' -- $argv
+argparse -n locate-dominating-file 's/silent' 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "locate-dominating-file - look up in the directory hierarchy for a specified file."
+    echo "Usage: locate-dominating-file [arguments] [filename]"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -s/--silent - Don't print anything to stdout."
+    exit
+end
 
 set file $argv[1]
 

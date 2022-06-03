@@ -6,6 +6,17 @@
 
 # FIX - maybe this should be able to rename files too?
 
+argparse -n move-gui 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "move-gui - move a file using a file selector gui."
+    echo "Usage: move-gui [files]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    echo "  -         - Read file list from stdin."
+    exit
+end
+
 set script (basename (status filename))
 
 if test (count $argv) -eq 0; or test "$argv[1]" = '-'

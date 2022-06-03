@@ -3,6 +3,16 @@
 # basically a shortcut for case-insensitive searching anywhere in a file's name.
 # requires either bfs or find.
 
+argparse -n loc 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "loc - locate files by name. effectively just a shortcut for find . -iname '*QUERY*'"
+    echo "Usage: loc [arguments] [search terms]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
 if not command -qs bfs
     alias bfs 'find'
 end

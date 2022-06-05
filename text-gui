@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# text-gui - simple utility to show input text in a GUI.
+# text-gui - show arbitrary text in a simple GUI.
 # may be useful as part of scripts bound to window manager shortcuts or the like.
 
 # TODO:
@@ -60,7 +60,7 @@ def makeWindow(text, title=None, width=default_width, height=default_height, max
   root.mainloop()
 
 if __name__ == "__main__":
-  parser = argparse.ArgumentParser(description="Show text in a graphical window.")
+  parser = argparse.ArgumentParser(description="Show arbitrary text in a simple GUI.")
   parser.add_argument("-T", "--title", dest="title", help="the title of the window")
   parser.add_argument("-t", "--text", dest="text", help="the text of the window; if not provided, will be read from stdin")
   parser.add_argument("-W", "--width", dest="width", type=int, help="the window's initial width")

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env fish
 
 # randomsong - get a list of N random songs from your music directory.
 # this caches a list of songs to a file so it only has to be generated once.
@@ -18,30 +18,41 @@
 # configuration:
 
 # your music directory
-DIRECTORY='/media/music/'
+set directory '/media/music/'
 
-# where to save the list of songs.
-CACHE='/tmp/songlist.txt'
+# where to save the list of songs
+set cache '/tmp/songlist.txt'
 
 # code:
 
-num="$1"
+argparse -n randomsong 'h/help' -- $argv
 
-if [[ -z $num ]]; then
-    num=1
-fi
+if test -n "$_flag_h"
+    echo "randomsong - get a list of N random songs from your music directory."
+    echo "Usage: randomsong [arguments] [number of songs to get]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
 
-makesonglist() { # make songlist.txt
-    find "$DIRECTORY" -iname '*.mp3' -or -iname '*.flac' -or -iname '*.m4a' -or -iname '*.ogg' >"$CACHE" 2>/dev/null
-}
+set num $argv[1]
 
-rsong() {
-    if [[ -e "$CACHE" ]]; then
-        sort -R "$CACHE" | head -$num
+if test -z "$num"
+    set num 1
+end
+
+function makesonglist
+    echo "Making song list..." >&2
+    find "$directory" -iname '*.mp3' -or -iname '*.flac' -or -iname '*.m4a' -or -iname '*.ogg' >"$cache" 2>/dev/null
+end
+
+function rsong
+    if test -e "$cache"
+        sort -R "$cache" | head -$num
     else
         makesonglist
         rsong
-    fi
-}
+    end
+end
 
 rsong

@@ -5,8 +5,18 @@
 #
 # run-if-not emacs
 
-set res $argv[1]
+# code:
 
-if not pgrep "^$res\$" >/dev/null 2>/dev/null
+argparse -n run-if-not 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "run-if-not - run a program if it's not already running."
+    echo "Usage: run-if-not [arguments] [program and arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+if not pgrep "^$argv[1]\$" >/dev/null 2>/dev/null
     exec $argv
 end

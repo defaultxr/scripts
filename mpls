@@ -1,12 +1,11 @@
 #!/usr/bin/env fish
 
 # mpls - list tracks in mpd's current playlist.
-# includes the position in the playlist by default (unlike mpc)
-# with one argument, only shows the current track and 10 before and after it.
-# also shows an indicator next to the current track.
+# unlike 'mpc playlist' it includes the index of each item by default, and shows an indicator next to the current track.
+# includes a -c or --context argument to only show the tracks near the currently-playing one.
 
 # usage:
-# mpls [context-only]
+# mpls [-h/--help] [-c/--context[=N]]
 
 # examples:
 #
@@ -14,10 +13,10 @@
 # mpls
 #
 # show the current song and 10 before and after it:
-# mpls c
+# mpls -c
 #
 # show the current song and the 20 before and after it:
-# mpls 20
+# mpls -c 20
 
 # configuration:
 
@@ -26,25 +25,42 @@ set prepend '▶ '
 
 # code:
 
+argparse -n mpls 'h/help' 'c/context=?!_validate_int --min 1' -- $argv
+
+if test -n "$_flag_h"
+    echo "mpls - list tracks in mpd's current playlist."
+    echo "Usage: mpls [arguments] [number]"
+    echo
+    echo "  -h/--help    - Print help and exit."
+    echo "  -c/--context - Only show tracks in the playlist near the current."
+    exit
+end
+
 set mpc (mpc --format='%position% - ')
 set formatargs "--format=%position% - %artist% - %title%"
-set num 10
+
+if test -n "$_flag_c"
+    set num "$_flag_c"
+else
+    set num 10
+end
 
 if test (count $argv) -gt 0; and string match -qr '^\d+$' $argv[1]
     set num $argv[1]
 end
 
-if test (count $mpc) -gt 1
+if test (count $mpc) -gt 1 # MPD is playing.
     set mpc (echo $mpc[1])
-    if test (count $argv) -eq 1
+    if set -q _flag_c
         mpc $formatargs playlist | grep -i -A $num -B $num "^$mpc" | sed "s/^$mpc/$prepend$mpc/"
     else
         mpc $formatargs playlist | sed "s/^$mpc/$prepend$mpc/"
     end
-else # mpd is not playing, so just list the whole playlist.
-    if test (count $argv) -ne 1
-        mpc $formatargs playlist
-    else
+else # MPD is not playing any track.
+    if set -q _flag_c
         echo "MPD is not playing, so there is no playlist context."
+        exit 1
+    else
+        mpc $formatargs playlist
     end
 end

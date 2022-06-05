@@ -26,10 +26,10 @@ end
 
 set url $argv[1]
 set user ""
-set weechat (test -e ~/.weechat/weechat_fifo;echo $status)
-set is_twitch (echo $url | grep '^https\?://\(www.\|go.\)\?twitch.tv/' >/dev/null;echo $status)
+set is_twitch (test -e ~/.weechat/weechat_fifo; and string match --quiet --regex '^https\?://\(www.\|go.\)\?twitch.tv/' $url;echo $status)
 
-if test $weechat = '0'; and test $is_twitch = '0'
+
+if test "$is_twitch" = '0'
     set user (string lower (string split / $url)[4])
     echo Joining \#$user...
     echo "*/window 1" >~/.weechat/weechat_fifo
@@ -38,7 +38,7 @@ end
 
 mpv $argv
 
-if test $weechat = '0'; and test $is_twitch = '0'
+if test "$is_twitch" = '0'
     echo Closing \#$user...
     echo "irc.server.twitch */close irc.twitch.#$user" >~/.weechat/weechat_fifo
 end

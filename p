@@ -14,6 +14,16 @@
 
 # code:
 
+argparse -n p 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "p - play something with mpv."
+    echo "Usage: p [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
 set url $argv[1]
 set user ""
 set weechat (test -e ~/.weechat/weechat_fifo;echo $status)

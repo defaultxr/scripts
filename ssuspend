@@ -3,11 +3,17 @@
 # suspends your monitor, of course!
 # 'ssuspend on' to unsuspend.
 
-if test (count $argv) = 1
-    if string match -q '*help*' -- "$argv[1]"
-        echo "ssuspend - \"screen suspend\". 'ssuspend on' to unsuspend."
-        exit
-    end
+argparse -n ssuspend 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "ssuspend - suspend screens."
+    echo "Usage: ssuspend [arguments] [on/off]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+if contains -- "$argv[1]" "" "on" "1"
     set action on
 else
     set action suspend

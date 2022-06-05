@@ -26,7 +26,10 @@ our %types := {
     image => qw/ bmp gif jpeg jpg png webp /,
     video => qw/ avi flv m2t m4v mkv mov mp4 ogv webm wmv /,
     archive => qw/ 7z bz2 gz rar tar zip /,
+    directory => ("/", ),
 };
+%types{"visual"} = [|%types{"image"}, |%types{"video"}];
+%types{"all"} = [|%types{"audio"}, |%types{"image"}, |%types{"video"}, |%types{"archive"}, |%types{"directory"}];
 
 sub normalize-type($_) {
     return "audio" if /^(a(udio)?|mu(sic)?)$/;
@@ -35,27 +38,29 @@ sub normalize-type($_) {
     return "archive" if /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/;
     return "visual" if /^(vis(ual)?|me(dia)?)$/;
     return "directory" if /^d(ir(ectory)?)?$/;
-    fail "unknown type \"$_\"; Try instead: audio, image, video, archive, visual, or directory";
+    return "all" if /^a(ll|ny)$/;
+    fail "unknown type \"$_\"; Try instead one of: " ~ %types.keys.sort.join(", ");
 }
 
 sub type-extensions($type is copy) {
     #= Get a list of file extensions for TYPE.
-    $type = normalize-type($type);
-    if ($type eq "visual") {
-        return [|%types{"image"}, |%types{"video"}];
-    } else {
-        return %types{$type};
-    }
+    return %types{$type};
+}
+
+sub extension-of($filename) {
+    #= Get the lowercased file extension of FILENAME. If it's a directory, "/" is returned.
+    return "/" if ($filename.IO.d);
+    return $filename.IO.extension.lc;
 }
 
 sub is-extension-type($filename, $type) {
-    $filename.IO.extension.lc ~~ any(|type-extensions($type));
+    extension-of($filename) ~~ any(|type-extensions($type));
 }
 
 subset optval of Any where Str|True;
 
 sub MAIN(
-    Str $type is copy, #= the type to filter to
+    Str $type is copy, #= the type to filter to; should be one of: audio, image, video, archive, directory, visual, all
     optval :$print, #= print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
 ) {
     $type = normalize-type($type);
@@ -63,7 +68,13 @@ sub MAIN(
     if ($print.defined) {
         given $print {
             when any(qw/ find bfs /) {
-                type-extensions($type).map({ "-iname '*." ~ $_ ~ "'"}).join(" -or ").say;
+                type-extensions($type).map({
+                    if ($_ eq '/') {
+                        "-type\nd";
+                    } else {
+                        "-iname\n*." ~ $_;
+                    }
+                }).join("\n-or\n").say;
             }
             when any(qw/ s sp space spaces /) {
                 type-extensions($type).join(" ").say;
@@ -75,16 +86,7 @@ sub MAIN(
         exit;
     }
 
-    my $func = do given $type {
-        when "directory" {
-            *.IO.d;
-        }
-        default {
-            sub ($_) { is-extension-type($_, $type); }
-        }
-    }
-
     for $*IN.lines {
-        .say when $func($_);
+        .say when is-extension-type($_, $type);
     }
 }

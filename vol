@@ -46,6 +46,17 @@ set card 2
 
 # code:
 
+argparse -n vol 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "vol - change alsa volume."
+    echo "Usage: vol [arguments] [operation] [parameter]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    echo "operations: + - reset toggle mute unmute"
+    exit
+end
+
 if test 1 -eq (count $argv)
     set op (string replace -r -- '\d+' '' $argv[1])
     set param (string match -r -- '\d+' $argv[1])

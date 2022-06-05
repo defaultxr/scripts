@@ -2,7 +2,7 @@
 
 A collection of various convenience scripts I've written for myself.
 
-Each script contains usage information in its source, and most of them also support `-h`/`--help` to display a basic summary on the command line. Some of the scripts also have configuration options at the top that you may need or want to change.
+Each script supports a `-h` or `--help` argument to display a summary and basic help information on the command line. Some of the scripts have configuration options at the top of the file that you may need or want to change.
 
 They're written in a variety of languages, but mostly [fish](https://fishshell.com/) because fish is great.
 

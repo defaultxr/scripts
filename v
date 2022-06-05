@@ -21,7 +21,16 @@ set flags -a -b
 
 # code:
 
-argparse -n v 'T/title=' -- $argv
+argparse -n v 'h/help' 'T/title=' -- $argv
+
+if test -n "$_flag_h"
+    echo "v - view images with nsxiv."
+    echo "Usage: v [arguments]"
+    echo
+    echo "  -h/--help  - Print help and exit."
+    echo "  -T/--title - Set the window's title."
+    exit
+end
 
 set title "$_flag_T"
 

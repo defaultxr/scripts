@@ -13,7 +13,7 @@ if test -n "$_flag_h"
     exit
 end
 
-if contains -- "$argv[1]" "" "on" "1"
+if contains -- "$argv[1]" "on" "1"
     set action on
 else
     set action suspend

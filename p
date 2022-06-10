@@ -14,7 +14,7 @@
 
 # code:
 
-argparse -n p 'h/help' -- $argv
+argparse -n p --ignore-unknown 'h/help' -- $argv
 
 if test -n "$_flag_h"
     echo "p - play something with mpv."
@@ -26,7 +26,7 @@ end
 
 set url $argv[1]
 set user ""
-set is_twitch (test -e ~/.weechat/weechat_fifo; and string match --quiet --regex '^https\?://\(www.\|go.\)\?twitch.tv/' $url;echo $status)
+set is_twitch (test -e ~/.weechat/weechat_fifo; and string match --quiet --regex -- '^https\?://\(www.\|go.\)\?twitch.tv/' $url;echo $status)
 
 
 if test "$is_twitch" = '0'

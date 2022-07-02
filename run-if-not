@@ -7,7 +7,7 @@
 
 # code:
 
-argparse -n run-if-not 'h/help' -- $argv
+argparse -n run-if-not --ignore-unknown 'h/help' -- $argv
 
 if test -n "$_flag_h"
     echo "run-if-not - run a program if it's not already running."

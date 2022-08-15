@@ -1,7 +1,10 @@
 #!/usr/bin/env fish
-
-# vol - change alsa volume.
+# vol - change system volume.
 # more convenient and intuitive than typing crap like "amixer -c 2 set PCM +2%"
+
+# used as a reference:
+# https://github.com/claudius-kienle/polybar-pipewire-control/blob/master/pipewire-control.bash
+# perhaps in the future pw-volume could be used (it failed to compile for me before)
 
 # usage:
 # vol <operation> <parameter>
@@ -9,12 +12,14 @@
 # vol <operation and parameter>
 
 # operations are:
-# + u up h higher - increase volume.
-# - d down l lower - decrease volume.
+# + u up - increase volume.
+# - d down - decrease volume.
 # r reset s set - set volume to the specified value.
+# [number]% - set volume to the specified value.
 # t toggle - toggle muting.
 # m mute - mute.
 # un unmute - unmute.
+# switch swap output o - switch output device (basically just unmutes one and mutes the others).
 
 # examples:
 #
@@ -36,58 +41,61 @@
 # set volume to 40%:
 # vol 40
 
-# configuration:
-
-# the name of the alsa device to affect
-set device PCM
-
-# the card number
-set card 2
-
 # code:
 
-argparse -n vol 'h/help' -- $argv
-
-if test -n "$_flag_h"
-    echo "vol - change alsa volume."
-    echo "Usage: vol [arguments] [operation] [parameter]"
-    echo
-    echo "  -h/--help - Print help and exit."
-    echo "operations: + - reset toggle mute unmute"
-    exit
+function default_sink_name
+    string match 'Default Sink:*' (pactl info) | string sub -s 15
 end
 
-if test 1 -eq (count $argv)
-    set op (string replace -r -- '\d+' '' $argv[1])
-    set param (string match -r -- '\d+' $argv[1])
-    if test -z $param
-        set param 2
-    end
-    if test -z $op
-        set op s
-    end
-else if test 2 -eq (count $argv)
-    set op $argv[1]
-    set param $argv[2]
+function sink_id
+    pactl list sinks short | string match "$argv"
 end
 
-if test 0 -eq (count $argv)
-    amixer -c $card get $device | tail -1 | string sub -s 16
-else
-    amixer -c $card set $device (switch $op
-        case u up h higher +
-            echo $param%+
-        case d down l lower -
-            echo $param%-
-        case r reset set s
-            echo $param%
-        case t toggle
-            echo toggle
-        case m mute
-            echo mute
-        case un unmute
-            echo unmute
+function sink_description
+    string match --regex '\n*Description:.*' "$pactl" | string sub -s 14
+end
+
+function sink_volume_percent
+    # echo "$pactl" | grep -A 15 'Sink #' | grep '^\\s*Volume:' | awk -F ':' '{print $3; exit}'
+    string match --regex 'Volume:.*?([0-9]+%)' "$pactl" | tail -1
+end
+
+function sink_mute_status
+    string match --regex 'Mute: (.+?)\n' "$pactl" | tail -1
+end
+
+function mute
+    pactl set-sink-mute '@DEFAULT_SINK@' $argv
+end
+
+function volume
+    pactl set-sink-volume '@DEFAULT_SINK@' $argv
+end
+
+if test (count $argv) -gt 0
+    switch "$argv[1]"
+        case mute m
+            mute on
+        case unmute un
+            mute off
+        case toggle t
+            mute toggle
+        case + u up
+            volume '+3%'
+        case - d down
+            volume '-3%'
+        case reset r set s
+            volume "$argv[2]"
+        case '*%'
+            volume "$argv[1]"
         case '*'
-            echo $op%
-    end) | tail -1 | string sub -s 16
+            echo 'vol: error: unrecognized argument'
+            exit 1
+    end
 end
+
+set pactl "$(pactl list sinks)"
+
+printf '%s%s\n' (sink_volume_percent) (if test "$(sink_mute_status)" = 'yes'; echo -n ' (muted)'; end)
+
+# sink_id "$(default_sink_name)"

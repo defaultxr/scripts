@@ -16,6 +16,7 @@ default_max_height = 800
 # theme
 text_fg = "#38f"
 text_bg = "#320"
+cursor_bg = "#eee"
 title_fg = "#eee"
 title_bg = "#111"
 scroll_fg = text_fg
@@ -46,7 +47,7 @@ def makeWindow(text, title=None, width=default_width, height=default_height, max
     label = Label(root, text=title, font=tkFont.Font(size=13), fg=title_fg, bg=title_bg)
     label.pack(fill=X)
 
-  textbox = scrolledtext.ScrolledText(root, font=font, fg=text_fg, bg=text_bg)
+  textbox = scrolledtext.ScrolledText(root, font=font, fg=text_fg, bg=text_bg, insertbackground=cursor_bg)
   textbox.vbar.config(troughcolor=scroll_bg, bg=scroll_fg)
   textbox.pack(fill=BOTH, expand=True)
   textbox.insert(END, text)

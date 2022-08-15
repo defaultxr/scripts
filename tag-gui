@@ -391,6 +391,7 @@ def make_gui():
   root.bind('<Return>', ret)
   root.bind('<Tab>', tab)
   root.bind('<Escape>', lambda e: quit())
+  root.bind('<Control-g>', lambda e: quit())
   root.bind('<Up>', lambda e: move_selection(-1))
   root.bind('<Down>', lambda e: move_selection(1))
   root.bind('<Control-p>', lambda e: move_selection(-1))

@@ -265,7 +265,11 @@ If COMPLETE is true, the replacement should be considered a "complete" tag, and 
   else:
     txt = txt[0:indexes[0]] + text + txt[indexes[1]:]
   set_input_text(txt)
-  new_cursor = tag_at_cursor_indexes()[1]
+  new_cursor = tag_at_cursor_indexes()
+  if new_cursor == None:
+    new_cursor = len(txt)
+  else:
+    new_cursor = new_cursor[1]
   if complete and (new_cursor == len(txt)):
     set_input_text(txt + ' ')
     new_cursor = new_cursor + 1

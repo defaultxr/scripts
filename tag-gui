@@ -395,6 +395,8 @@ def make_gui():
   tagsinput.pack(fill=X, expand=True)
   tagsinput.bind('<Tab>', tab)
   tagsinput.bind('<Return>', ret)
+  tagsinput.bind('<KeyRelease>', key_release)
+  tagsinput.bind('<comma>', comma)
   tagsinput.tag_configure('nonexistent', foreground='red')
 
   listbox = Listbox(mainframe, selectmode=SINGLE)
@@ -411,8 +413,6 @@ def make_gui():
   root.bind('<Control-BackSpace>', ctrl_backspace)
   root.bind('<Alt-b>', backward_word)
   root.bind('<Alt-f>', forward_word)
-  tagsinput.bind('<KeyRelease>', key_release)
-  tagsinput.bind('<comma>', comma)
 
   tagsinput.focus()
   root.minsize(500, 120)

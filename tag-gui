@@ -4,6 +4,12 @@
 
 # TODO:
 # - make the completions list sort by the number of uses each tag has (and also show the number next to each tag)
+# - support flex/fuzzy completion
+# - handle tags with values (currently they show in red)
+# - highlight the filename differently from the directory in the file name "label".
+# - copy the filename to clipboard when clicked.
+# - copy the old tags to clipboard when clicked.
+# - put a scrollbar on the completion listbox.
 
 # settings:
 

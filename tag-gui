@@ -178,14 +178,20 @@ def get_input_text():
   """Get the string of text in the input field."""
   return ''.join(map(lambda x: x[1], tagsinput.dump('1.0', END, text=True)))[:-1]
 
-def set_input_text(text):
-  """Set the input field's text to TEXT."""
-  tagsinput.delete('1.0', END)
-  tagsinput.insert('1.0', text)
+def set_input_text(widget, text):
+  """Set the text of WIDGET to STRING."""
+  widget.delete('1.0', END)
+  widget.insert('1.0', text)
 
-def xview(index):
+def set_input_text_disable(widget, string):
+  """Set the text of WIDGET to STRING and ensure it is disabled afterwards."""
+  widget.configure(state=NORMAL)
+  set_input_text(widget, string)
+  widget.configure(state=DISABLED)
+
+def xview(widget, index):
   """Scroll the text input field to view the specified index."""
-  tagsinput.xview_scroll(max(0, index-50), 'units')
+  widget.xview_scroll(max(0, index-50), 'units')
 
 def update_completions():
   """Update the listbox to show suggested completions based on the word next to the cursor in the text input field."""
@@ -204,7 +210,7 @@ def update_completions():
   for tag in matching:
     listbox.insert(END, tag)
   ind = get_cursor_pos()
-  xview(ind)
+  xview(tagsinput, ind)
   if len(matching) == 1:
     set_selection(0)
   else:
@@ -262,14 +268,14 @@ If COMPLETE is true, the replacement should be considered a "complete" tag, and 
     txt = txt + ' ' + text
   else:
     txt = txt[0:indexes[0]] + text + txt[indexes[1]:]
-  set_input_text(txt)
+  set_input_text(tagsinput, txt)
   new_cursor = tag_at_cursor_indexes()
   if new_cursor == None:
     new_cursor = len(txt)
   else:
     new_cursor = new_cursor[1]
   if complete and (new_cursor == len(txt)):
-    set_input_text(txt + ' ')
+    set_input_text(tagsinput, txt + ' ')
     new_cursor = new_cursor + 1
   set_cursor_pos(new_cursor)
 
@@ -355,7 +361,7 @@ def ctrl_backspace(ignored):
   pos = get_cursor_pos()
   txt = get_input_text()
   next_space = txt.rfind(' ', 0, pos)+1
-  set_input_text(txt[:next_space] + txt[pos:])
+  set_input_text(tagsinput, txt[:next_space] + txt[pos:])
   set_cursor_pos(next_space)
   return "break"
 
@@ -371,11 +377,19 @@ def make_gui():
   mainframe = ttk.Frame(root)
   mainframe.pack(fill=BOTH, expand=True)
 
-  label = ttk.Label(mainframe, text="Tagging...")
-  label.pack(fill=X, expand=True)
+  # We make a temporary Label to get the default background color to use in the next two Text widgets.
+  tmp_label = Label()
+  bg = tmp_label.cget('bg')
+  tmp_label.destroy()
 
-  tagslabel = ttk.Label(mainframe, text="Original tags: ...")
+  # We use a Text widget instead of a Label so we can ensure it is scrolled to the right if the text is too long.
+  label = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9), padx=0, pady=0, border=0, bg=bg)
+  label.pack(fill=X, expand=True)
+  set_input_text_disable(label, "Tagging...")
+
+  tagslabel = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9), padx=0, pady=0, border=0, bg=bg)
   tagslabel.pack(fill=X, expand=True)
+  set_input_text_disable(tagslabel, "Original tags: ...")
 
   tagsinput = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9))
   tagsinput.pack(fill=X, expand=True)
@@ -438,15 +452,16 @@ if __name__ == '__main__':
   title = make_title(files)
   make_gui()
   root.title("Tagging " + title + "...")
-  label['text'] = title
+  set_input_text_disable(label, title)
+  xview(label, get_end_pos(label))
   tags = []
   for file in files:
     tags = tags + [file_tags(file)]
   tags = common_items(*tags)
   tags.sort()
   tagstxt = ' '.join(tags)
-  tagslabel['text'] = "Original tags: " + tagstxt
+  set_input_text_disable(tagslabel, "Original tags: " + tagstxt)
   if not tags == []:
-    set_input_text(tagstxt + ' ')
+    set_input_text(tagsinput, tagstxt + ' ')
   set_cursor_pos(END)
   root.mainloop()

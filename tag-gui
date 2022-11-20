@@ -160,9 +160,9 @@ def save_tags(newtags):
 
 # callbacks / gui actions
 
-def get_end_pos():
+def get_end_pos(widget):
   """Get the length of the text in the input field."""
-  return len(get_input_text())
+  return len(get_input_text(widget))
 
 def get_cursor_pos():
   """Get the integer position of the cursor in the text input field."""
@@ -174,9 +174,9 @@ def set_cursor_pos(pos):
     pos = "1." + str(pos)
   tagsinput.mark_set(INSERT, pos)
 
-def get_input_text():
+def get_input_text(widget):
   """Get the string of text in the input field."""
-  return ''.join(map(lambda x: x[1], tagsinput.dump('1.0', END, text=True)))[:-1]
+  return ''.join(map(lambda x: x[1], widget.dump('1.0', END, text=True)))[:-1]
 
 def set_input_text(widget, text):
   """Set the text of WIDGET to STRING."""
@@ -196,7 +196,7 @@ def xview(widget, index):
 def update_completions():
   """Update the listbox to show suggested completions based on the word next to the cursor in the text input field."""
   pos = get_cursor_pos()
-  txt = get_input_text()
+  txt = get_input_text(tagsinput)
   listbox.delete(0, END)
   if txt == '' or txt[pos-1] == ' ':
     matching = alltags
@@ -219,7 +219,7 @@ def update_completions():
 def update_highlighting():
   """Highlight unknown tags in red in the text input field, to make possible spelling errors more obvious."""
   tagsinput.tag_remove('nonexistent', '1.0', END)
-  txt = get_input_text()
+  txt = get_input_text(tagsinput)
   words = txt.split()
   start = 0
   for word in words:
@@ -240,7 +240,7 @@ def key_release(*ignored):
 def tag_at_cursor_indexes():
   """Get the indexes of the tag near the cursor position, or None if the cursor is not near a word."""
   cursor = get_cursor_pos()
-  txt = get_input_text()
+  txt = get_input_text(tagsinput)
   if txt[cursor-1] == ' ':
     return None
   else:
@@ -256,14 +256,14 @@ def tag_at_cursor():
   if indexes == None:
     return None
   else:
-    return get_input_text()[indexes[0]:indexes[1]]
+    return get_input_text(tagsinput)[indexes[0]:indexes[1]]
 
 def replace_tag_at_cursor(text, complete=False):
   """Remove the tag around the cursor if there is one, then insert TEXT at the cursor. Automatically adds spaces before and after the tag if necessary.
 
 If COMPLETE is true, the replacement should be considered a "complete" tag, and an extra space should be added afterwards."""
   indexes = tag_at_cursor_indexes()
-  txt = get_input_text()
+  txt = get_input_text(tagsinput)
   if indexes == None:
     txt = txt + ' ' + text
   else:
@@ -299,9 +299,9 @@ def tab(event):
   """Activate completion of the current input based on the selected item in the completions listbox."""
   curselection = listbox.curselection()
   cursor = get_cursor_pos()
-  txt = get_input_text()
+  txt = get_input_text(tagsinput)
   if len(curselection) == 0:
-    if (cursor == get_end_pos()) or (txt[cursor] == ' '):
+    if (cursor == get_end_pos(tagsinput)) or (txt[cursor] == ' '):
       current = tag_at_cursor()
       if not current:
         return "break"
@@ -321,7 +321,7 @@ def tab(event):
 
 def ret(event):
   """Commit the tags inputted and save them to the specified files."""
-  save_tags(get_input_text().split())
+  save_tags(get_input_text(tagsinput).split())
   quit()
 
 def set_selection(index):
@@ -359,7 +359,7 @@ def comma(ignored):
 def ctrl_backspace(ignored):
   """Delete the word to the left of the cursor."""
   pos = get_cursor_pos()
-  txt = get_input_text()
+  txt = get_input_text(tagsinput)
   next_space = txt.rfind(' ', 0, pos)+1
   set_input_text(tagsinput, txt[:next_space] + txt[pos:])
   set_cursor_pos(next_space)

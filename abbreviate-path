@@ -1,5 +1,6 @@
 #!/usr/bin/env fish
 # abbreviate-path - abbreviate the path passed as an argument.
+# see also: fish's built-in prompt_pwd function, which does similar.
 
 argparse -n abbreviate-path 'h/help' -- $argv
 

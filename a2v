@@ -102,4 +102,4 @@ end
 # -c:v libx264 -crf 20 -preset slow -vf format=yuv420p -c:a aac -movflags +faststart output.mp4
 
 # ffmpeg -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length "$output"
-ffmpeg -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length -c:v libx264 -crf 20 -preset slow -vf format=yuv420p -c:a aac -movflags +faststart "$output"
+nice -n 10 ffmpeg -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length -c:v libx264 -crf 20 -preset slow -vf format=yuv420p -c:a aac -movflags +faststart "$output"

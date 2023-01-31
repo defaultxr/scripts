@@ -37,7 +37,7 @@ set title "$_flag_T"
 set args $argv
 
 function find-images -d "Get the list of images in the specified directory."
-    find $argv[1]/ -maxdepth 1 \( -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' -or -iname '*.webp' \) -exec readlink -f {} \; | sort -n
+    find $argv[1]/ -maxdepth 1 \( -iname '*.jpeg' -or -iname '*.jpg' -or -iname '*.gif' -or -iname '*.png' -or -iname '*.bmp' -or -iname '*.webp' -or -iname '*.ppm' \) -exec readlink -f {} \; | sort -n
 end
 
 function make-title -d "Echo a title string for the nsxiv window."

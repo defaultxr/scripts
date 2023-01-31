@@ -20,15 +20,15 @@
 
 # code:
 
-our %types := {
+our %types := { # initial definition should have fundamental types only, not compound types like "visual" or "media".
     image => qw/ bmp gif jpeg jpg png webp /,
     audio => qw/ aac aif aiff flac m4a mp3 ogg opus wav wma /,
     video => qw/ avi flv m2t m4v mkv mov mp4 ogv webm wmv /,
     archive => qw/ 7z bz2 gz rar tar zip /,
     directory => ("/", ),
 };
+%types{"all"} = %types.values[*;*]; # flatten to a single list of all extensions.
 %types{"visual"} = [|%types{"image"}, |%types{"video"}];
-%types{"all"} = [|%types{"audio"}, |%types{"image"}, |%types{"video"}, |%types{"archive"}, |%types{"directory"}];
 
 sub normalize-type($_) {
     #= Get the "canonical" un-abbreviated name of the type.

@@ -1,5 +1,4 @@
 #!/usr/bin/env raku
-
 # filter - filter a list of filenames, outputting only those whose extension denotes a specified "type".
 
 # usage:
@@ -32,6 +31,7 @@ our %types := {
 %types{"all"} = [|%types{"audio"}, |%types{"image"}, |%types{"video"}, |%types{"archive"}, |%types{"directory"}];
 
 sub normalize-type($_) {
+    #= Get the "canonical" un-abbreviated name of the type.
     return "image" if /^i(mages?)?$/;
     return "audio" if /^(a(udio)?|mu(sic)?)$/;
     return "video" if /^v(ideos?)?$/;
@@ -54,14 +54,15 @@ sub extension-of($filename) {
 }
 
 sub is-extension-type($filename, $type) {
+    #= True when FILENAME's extension is one of EXTENSIONS.
     extension-of($filename) ~~ any(|type-extensions($type));
 }
 
 subset optval of Any where Str|True;
 
 sub MAIN(
-    Str $type is copy, #= the type to filter to; should be one of: audio, image, video, archive, directory, visual, all
-    optval :$print, #= print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
+    Str $type is copy, #= The type to filter to; should be one of: image, audio, video, archive, directory, visual, all
+    optval :$print, #= Print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
 ) {
     $type = normalize-type($type);
 

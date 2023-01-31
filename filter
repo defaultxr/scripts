@@ -62,11 +62,11 @@ sub is-extension-type($filename, Mu $extensions) { # extensions must be Mu so th
     extension-of($filename) ~~ $extensions;
 }
 
-subset optval of Any where Str|True;
+subset output_style of Any where Str|True;
 
 sub MAIN(
     Str $type is copy, #= The type to filter to; should be one of: text, image, audio, video, archive, directory, visual, media, all.
-    optval :$print, #= Print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
+    output_style :$print, #= Print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
 ) {
     if ($print.defined) {
         given $print {

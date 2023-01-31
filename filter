@@ -53,9 +53,9 @@ sub extension-of($filename) {
     return $filename.IO.extension.lc;
 }
 
-sub is-extension-type($filename, $type) {
+sub is-extension-type($filename, Mu $extensions) { # extensions must be Mu so that Junctions are not autothreaded.
     #= True when FILENAME's extension is one of EXTENSIONS.
-    extension-of($filename) ~~ any(|type-extensions($type));
+    extension-of($filename) ~~ $extensions;
 }
 
 subset optval of Any where Str|True;
@@ -87,7 +87,11 @@ sub MAIN(
         exit;
     }
 
+    my $extensions = type-extensions($type);
+
+    my $junction = any(|$extensions);
+
     for $*IN.lines {
-        .say when is-extension-type($_, $type);
+        .say when is-extension-type($_, $junction);
     }
 }

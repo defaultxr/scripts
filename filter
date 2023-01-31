@@ -4,7 +4,7 @@
 # usage:
 # filter [--print=FORMAT] <type>
 #
-# type can be: audio, image, video, visual (images and video), media (audio, images, and video), or directory
+# type can be: text, audio, image, video, visual (images and video), media (images, audio, and video), or directory.
 # type can also be abbreviated to the first letter.
 #
 # if --print is provided, just print the list of extensions that would be used rather than filtering.
@@ -21,6 +21,7 @@
 # code:
 
 our %types := { # initial definition should have fundamental types only, not compound types like "visual" or "media".
+    text => qw/ txt text md org /,
     image => qw/ bmp gif jpeg jpg png webp /,
     audio => qw/ aac aif aiff flac m4a mp3 ogg opus wav wma /,
     video => qw/ avi flv m2t m4v mkv mov mp4 ogv webm wmv /,
@@ -29,14 +30,17 @@ our %types := { # initial definition should have fundamental types only, not com
 };
 %types{"all"} = %types.values[*;*]; # flatten to a single list of all extensions.
 %types{"visual"} = [|%types{"image"}, |%types{"video"}];
+%types{"media"} = [|%types{"image"}, |%types{"audio"}, |%types{"video"}];
 
 sub normalize-type($_) {
     #= Get the "canonical" un-abbreviated name of the type.
+    return "text" if /^t(e?xt(ual)?)?$/;
     return "image" if /^i(mages?)?$/;
     return "audio" if /^(a(udio)?|mu(sic)?)$/;
     return "video" if /^v(ideos?)?$/;
     return "archive" if /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/;
-    return "visual" if /^(vis(ual)?|me(dia)?)$/;
+    return "visual" if /^vis(ual)?$/;
+    return "media" if /^me(dia)?$/;
     return "directory" if /^d(ir(ectory)?)?$/;
     return "all" if /^a(ll|ny)$/;
     fail "unknown type \"$_\"; Try instead one of: " ~ %types.keys.sort.join(", ");
@@ -61,7 +65,7 @@ sub is-extension-type($filename, Mu $extensions) { # extensions must be Mu so th
 subset optval of Any where Str|True;
 
 sub MAIN(
-    Str $type is copy, #= The type to filter to; should be one of: image, audio, video, archive, directory, visual, all
+    Str $type is copy, #= The type to filter to; should be one of: text, image, audio, video, archive, directory, visual, media, all.
     optval :$print, #= Print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
 ) {
     if ($print.defined) {

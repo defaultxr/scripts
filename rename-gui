@@ -34,6 +34,14 @@ if test $status -eq 0
     if test -z "$_flag_e"; and test -z (get_ext $new)
         set new "$new$pext"
     end
+    if test -e "$dir/$new"
+        set -l text "$script: Target name $dir/$new already exists; exiting..."
+        zenity --error --text="$text"
+        set_color red
+        echo "$text"
+        set_color normal
+        exit 1
+    end
     if not test "$full_orig" = "$dir/$new"
         mv "$full_orig" "$dir/$new"
     end

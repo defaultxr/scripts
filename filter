@@ -22,8 +22,8 @@
 # code:
 
 our %types := {
-    audio => qw/ aac aif aiff flac m4a mp3 ogg opus wav wma /,
     image => qw/ bmp gif jpeg jpg png webp /,
+    audio => qw/ aac aif aiff flac m4a mp3 ogg opus wav wma /,
     video => qw/ avi flv m2t m4v mkv mov mp4 ogv webm wmv /,
     archive => qw/ 7z bz2 gz rar tar zip /,
     directory => ("/", ),
@@ -32,8 +32,8 @@ our %types := {
 %types{"all"} = [|%types{"audio"}, |%types{"image"}, |%types{"video"}, |%types{"archive"}, |%types{"directory"}];
 
 sub normalize-type($_) {
-    return "audio" if /^(a(udio)?|mu(sic)?)$/;
     return "image" if /^i(mages?)?$/;
+    return "audio" if /^(a(udio)?|mu(sic)?)$/;
     return "video" if /^v(ideos?)?$/;
     return "archive" if /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/;
     return "visual" if /^(vis(ual)?|me(dia)?)$/;

@@ -13,7 +13,7 @@ if test -n "$_flag_h"
     exit
 end
 
-set translation (xclip -o -selection primary | trans -brief 2>/tmp/translate-selected-err.txt | string collect)
+set translation (xclip -o -selection primary | trans -no-ansi 2>/tmp/translate-selected-err.txt | string collect)
 
 if test -z "$translation"
     set translation (cat /tmp/translate-selected-err.txt)

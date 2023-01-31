@@ -44,7 +44,7 @@ sub normalize-type($_) {
 
 sub type-extensions($type is copy) {
     #= Get a list of file extensions for TYPE.
-    return %types{$type};
+    return %types{normalize-type($type)};
 }
 
 sub extension-of($filename) {
@@ -64,8 +64,6 @@ sub MAIN(
     Str $type is copy, #= The type to filter to; should be one of: image, audio, video, archive, directory, visual, all
     optval :$print, #= Print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
 ) {
-    $type = normalize-type($type);
-
     if ($print.defined) {
         given $print {
             when any(qw/ find bfs /) {

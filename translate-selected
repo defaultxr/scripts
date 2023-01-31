@@ -13,11 +13,13 @@ if test -n "$_flag_h"
     exit
 end
 
+set title "selected text translation"
 set translation (xclip -o -selection primary | trans -no-ansi 2>/tmp/translate-selected-err.txt | string collect)
 
 if test -z "$translation"
+    set title "translation error"
     set translation (cat /tmp/translate-selected-err.txt)
 end
 
 # zenity --info --width=800 --text="$translation"
-text-gui -T "selected text translation" --text="$translation"
+text-gui -T "$title" --text="$translation"

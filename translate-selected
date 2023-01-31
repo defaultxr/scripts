@@ -15,7 +15,7 @@ end
 
 set translation (xclip -o -selection primary | trans -brief 2>/tmp/translate-selected-err.txt | string collect)
 
-if text -z "$translation"
+if test -z "$translation"
     set translation (cat /tmp/translate-selected-err.txt)
 end
 

@@ -371,6 +371,12 @@ def ctrl_backspace(ignored):
   set_cursor_pos(next_space)
   return "break"
 
+def copy_widget_text_to_clipboard(widget):
+  """Copy the text of WIDGET to the system clipboard."""
+  text = get_input_text(widget)
+  set_clipboard(text)
+  osd_notify("Copied '%s' to clipboard." % (text))
+
 # gui setup
 
 def make_gui():
@@ -392,10 +398,12 @@ def make_gui():
   label = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9), padx=0, pady=0, border=0, bg=bg)
   label.pack(fill=X, expand=True)
   set_input_text_disable(label, "Tagging...")
+  label.bind('<Button-1>', lambda e: copy_widget_text_to_clipboard(e.widget))
 
   tagslabel = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9), padx=0, pady=0, border=0, bg=bg)
   tagslabel.pack(fill=X, expand=True)
   set_input_text_disable(tagslabel, "Original tags: ...")
+  tagslabel.bind('<Button-1>', lambda e: copy_widget_text_to_clipboard(e.widget))
 
   tagsinput = Text(mainframe, height=1, wrap=NONE, font=tkFont.Font(size=9))
   tagsinput.pack(fill=X, expand=True)

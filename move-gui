@@ -49,6 +49,6 @@ for i in $files
     mv $full $destination
     set basename (basename $i)
     if command -q tmsu
-        tmsu repair --manual $full "$destination/$basename"
+        tmsu repair --manual $full "$destination/$basename" 2>/dev/null
     end
 end

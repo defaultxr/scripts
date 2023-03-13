@@ -56,12 +56,11 @@ function sink_description
 end
 
 function sink_volume_percent
-    # echo "$pactl" | grep -A 15 'Sink #' | grep '^\\s*Volume:' | awk -F ':' '{print $3; exit}'
-    string match --regex 'Volume:.*?([0-9]+%)' "$pactl" | tail -1
+    string match --regex 'Volume:.*?([0-9]+%)' (pactl get-sink-volume "@DEFAULT_SINK@") | tail -1
 end
 
 function sink_mute_status
-    string match --regex 'Mute: (.+?)\n' "$pactl" | tail -1
+    string match --regex 'Mute: (.+?)\n' (pactl get-sink-mute "@DEFAULT_SINK@") | tail -1
 end
 
 function mute
@@ -94,8 +93,4 @@ if test (count $argv) -gt 0
     end
 end
 
-set pactl "$(pactl list sinks)"
-
 printf '%s%s\n' (sink_volume_percent) (if test "$(sink_mute_status)" = 'yes'; echo -n ' (muted)'; end)
-
-# sink_id "$(default_sink_name)"

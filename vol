@@ -72,7 +72,8 @@ function volume
 end
 
 if test (count $argv) -gt 0
-    switch "$argv[1]"
+    set arg "$argv[1]"
+    switch "$arg"
         case mute m
             mute on
         case unmute un
@@ -86,10 +87,14 @@ if test (count $argv) -gt 0
         case reset r set s
             volume "$argv[2]"
         case '*%'
-            volume "$argv[1]"
+            volume "$arg"
         case '*'
-            echo 'vol: error: unrecognized argument'
-            exit 1
+            if string match --quiet --regex '^[0-9]+$' "$arg"; and test "$arg" -gt 0; and test "$arg" -lt 151
+                volume "$arg%"
+            else
+                echo 'vol: error: unrecognized argument'
+                exit 1
+            end
     end
 end
 

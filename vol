@@ -59,8 +59,8 @@ function sink_volume_percent
     string match --regex 'Volume:.*?([0-9]+%)' (pactl get-sink-volume "@DEFAULT_SINK@") | tail -1
 end
 
-function sink_mute_status
-    string match --regex 'Mute: (.+?)\n' (pactl get-sink-mute "@DEFAULT_SINK@") | tail -1
+function sink_muted -d "Get whether the default sink is muted. Returns 0 if it's muted and 1 if unmuted."
+    test 'yes' = "$(string match --regex 'Mute: (.+)' (pactl get-sink-mute '@DEFAULT_SINK@') | tail -1)"
 end
 
 function mute
@@ -98,4 +98,4 @@ if test (count $argv) -gt 0
     end
 end
 
-printf '%s%s\n' (sink_volume_percent) (if test "$(sink_mute_status)" = 'yes'; echo -n ' (muted)'; end)
+printf '%s%s\n' (sink_volume_percent) (if sink_muted; echo -n ' (muted)'; end)

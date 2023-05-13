@@ -16,7 +16,10 @@ end
 if contains -- "$argv[1]" "on" "1"
     set action on
 else
-    set action suspend
+    # per https://wiki.archlinux.org/title/Display_Power_Management_Signaling :
+    # "Note that DPMS was developed for CRT monitors, and on LCD displays, there is normally no difference between the standby, suspend and off modes."
+    # "off" is used as per the suggestion in xscreensaver-command's man page.
+    set action off
 end
 
 xset dpms force $action

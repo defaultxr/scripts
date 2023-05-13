@@ -49,5 +49,5 @@ else
 end
 
 if test -z "$_flag_C"
-    echo $filename | c -i
+    echo -n $filename | c -i
 end

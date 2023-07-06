@@ -35,6 +35,7 @@ def changeFontSize(font, change):
   font.configure(size=font["size"]+change)
 
 def makeWindow(text, title=None, width=default_width, height=default_height, max_width=default_max_width, max_height=default_max_height):
+  """Create the text-gui window."""
   root = Tk()
   root.title(title or "text-gui")
   root.minsize(width, height)

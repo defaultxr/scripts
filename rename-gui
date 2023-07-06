@@ -16,6 +16,12 @@ if set -q _flag_h
     exit
 end
 
+function warn -d "Echo a warning."
+    set_color yellow
+    echo "$script: $argv" >&2
+    set_color normal
+end
+
 set input "$argv[1]"
 set orig (path basename "$input")
 set full_orig (path resolve "$input")
@@ -28,36 +34,34 @@ end
 
 set new (zenity --entry --title="$script: $orig" --text="Rename '$orig'$preserve to:" --entry-text="$orig" --width=700)
 
-if test $status -eq 0
-    if test -z "$_flag_e"; and test -z (path extension $new)
-        set new "$new$pext"
+if not test $status -eq '0'
+    if not set -q _flag_q
+        warn "Canceled."
     end
-    if test -e "$dir/$new"
-        set -l text "$script: Target name $dir/$new already exists; exiting..."
-        zenity --error --text="$text"
-        set_color red
-        echo "$text"
-        set_color normal
+    exit
+end
+
+if not set -q _flag_e; and test -z (path extension "$new")
+    set new "$new$pext"
+end
+
+if test "$(path dirname \"$new\")" = '.'
+    set new "$dir/$new"
+end
+
+if test "$full_orig" = "$new"
+    warn "Source and target are the same; exiting..."
+    exit 2
+end
+
+if test -e "$new"
+    if not zenity --question --text="File $new already exists; overwrite?"
         exit 1
-    end
-    if not test "$full_orig" = "$dir/$new"
-        mv "$full_orig" "$dir/$new"
-    end
-    if test -z "$_flag_q"
-        set_color yellow
-        echo -n "$script: "
-        set_color normal
-        echo -n "$full_orig"
-        set_color yellow
-        echo -n " -> "
-        set_color normal
-        echo "$dir/$new"
-    end
-else
-    if test -z "$_flag_q"
-        set_color yellow
-        echo "$script: cancelled."
-        set_color normal
     end
 end
 
+mv "$full_orig" "$new"
+
+if not set -q _flag_q
+    warn "$full_orig -> $new"
+end

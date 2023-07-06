@@ -1,0 +1,35 @@
+#!/usr/bin/env fish
+# xeph - Run a program in Xephyr, starting it if necessary.
+
+argparse -n xeph 'h/help' 'k/kill' 'n/no-wm' -- $argv
+
+if set -q _flag_h
+    echo "xeph - Run a program in Xephyr, starting it if necessary."
+    echo "Usage: xeph [arguments] [program]"
+    echo
+    echo "  -h/--help  - Print help and exit."
+    echo "  -k/--kill  - Kill the Xephyr process."
+    echo "  -n/--no-wm - Don't run a window manager; just run the specified program and quit Xephyr when it ends."
+    exit
+end
+
+if set -q _flag_k
+    pkill Xephyr
+    exit
+end
+
+set display 5
+
+if not set -q _flag_n; and not pgrep Xephyr
+    Xephyr :$display -ac -screen 1920x1080 -no-host-grab &
+    sleep 1
+    DISPLAY=:$display.0 fluxbox &>/dev/null &
+    DISPLAY=:$display.0 xsetroot -cursor_name center_ptr &
+end
+
+if set -q _flag_n
+    DISPLAY=:$display.0 $argv
+    pkill Xephyr
+else
+    DISPLAY=:$display.0 $argv &
+end

@@ -1,0 +1,16 @@
+#!/usr/bin/env fish
+# bak - Quickly make a .bak backup copy of the specified file(s).
+
+argparse -n bak 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "bak - Quickly make a .bak backup copy of the specified file(s)."
+    echo "Usage: bak [arguments] files"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+for file in $argv
+    cp "$file" "$file.bak"
+end

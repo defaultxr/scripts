@@ -1,6 +1,5 @@
 #!/usr/bin/env fish
-
-# p - "play". play something with mpv, joining its twitch chat via irc (weechat) if it's a twitch stream.
+# p - Play media with mpv, joining its twitch chat via irc (weechat) if it's a twitch stream.
 # once the stream is stopped, the channel will be exited.
 # this is just a wrapper for mpv and doesn't alter its behavior other than that.
 # you'll need to have weechat's fifo plugin enabled for this to work.
@@ -17,7 +16,7 @@
 argparse -n p --ignore-unknown 'h/help' -- $argv
 
 if test -n "$_flag_h"
-    echo "p - play something with mpv."
+    echo "p - Play media with mpv."
     echo "Usage: p [arguments]"
     echo
     echo "  -h/--help - Print help and exit."

@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# open a man page in emacs.
+
+emacsclient --eval "(man \"$argv\")"

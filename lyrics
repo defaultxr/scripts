@@ -1,0 +1,39 @@
+#!/usr/bin/env fish
+# lyrics - Get the lyrics for the specified or currently-playing song.
+# requirements: clyrics, ffprobe (ffmpeg)
+
+argparse -n lyrics 'h/help' 'f/file=' 'n/no-fetch' -- $argv
+
+if set -q _flag_h
+    echo "lyrics - Get the lyrics for the specified or currently-playing song."
+    echo "Usage: lyrics [arguments] [song]"
+    echo
+    echo "  -h/--help     - Print help and exit."
+    echo "  -f/--file     - Specify the file."
+    echo "  -n/--no-fetch - Don't attempt to fetch lyrics from the internet; only extract them from the file's lyrics tag. If no lyrics could be found in the tag, exits with a status of 1."
+    exit
+end
+
+if test (count $argv) -gt '0'
+    clyrics $argv
+    exit
+else
+    if set -q _flag_f
+        set filename "$_flag_f"
+    else
+        set filename (m file)
+    end
+    # FIX: this should also check for all lyrics tags, not just english.
+    set -- title_artist_maybe_lyrics "$(ffprobe -v quiet -loglevel panic -show_entries format_tags=title,artist,lyrics-eng -of default=nokey=1:noprint_wrappers=1 "$filename")"
+    set -- title "$(echo $title_artist_maybe_lyrics | head -1)"
+    set -- artist "$(echo $title_artist_maybe_lyrics | head -2 | tail -1)"
+    set -- maybe_lyrics "$(echo $title_artist_maybe_lyrics | tail -n +3)"
+    if not test -z "$maybe_lyrics"
+        printf '%s\n' "$maybe_lyrics"
+        exit
+    end
+    if set -q _flag_n
+        exit 1
+    end
+    clyrics "$artist" "$title"
+end

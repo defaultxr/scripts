@@ -33,7 +33,7 @@ from tkinter import *
 from tkinter import scrolledtext
 import tkinter.font as tkFont
 
-def changeFontSize(font, change):
+def change_font_size(font, change):
   """Add CHANGE to the size of the font."""
   font.configure(size=font["size"]+change)
 
@@ -48,7 +48,7 @@ def run_action(widget, command):
   pipe.write(text)
   pipe.close()
 
-def makeWindow(text, title=None, width=default_width, height=default_height, max_width=default_max_width, max_height=default_max_height):
+def make_window(text, title=None, width=default_width, height=default_height, max_width=default_max_width, max_height=default_max_height):
   """Create the text-gui window."""
   root = Tk()
   root.title(title or "text-gui")
@@ -67,8 +67,8 @@ def makeWindow(text, title=None, width=default_width, height=default_height, max
   textbox.pack(fill=BOTH, expand=True)
   textbox.insert(END, text)
 
-  root.bind("<Control-equal>", lambda e: changeFontSize(font, 1))
-  root.bind("<Control-minus>", lambda e: changeFontSize(font, -1))
+  root.bind("<Control-equal>", lambda e: change_font_size(font, 1))
+  root.bind("<Control-minus>", lambda e: change_font_size(font, -1))
 
   root.bind("<Escape>", lambda e: quit())
   root.bind("<Control-g>", lambda e: quit())
@@ -99,4 +99,4 @@ if __name__ == "__main__":
   max_height = args.max_height or default_max_height
   actions = args.action or []
 
-  makeWindow(text, title=title, width=width, height=height, max_width=max_width, max_height=max_height)
+  make_window(text, title=title, width=width, height=height, max_width=max_width, max_height=max_height)

@@ -1,0 +1,48 @@
+#!/usr/bin/env fish
+# git-multi-log - Merge and sort git log summaries for multiple repos.
+
+set -- script "$(basename (status filename))"
+
+argparse -n "$script" 'h/help' 'f/format=' 'l/limit=' -- $argv
+
+if set -q _flag_h
+    echo "$script  - Merge and sort git log summaries for multiple repos."
+    echo "Usage: $script [arguments] repo-directories"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -f/--format - Set the date format (see date(1))."
+    echo "  -l/--limit  - Limit to the most recent N entries (default 1000)."
+    exit
+end
+
+if set -q _flag_f
+    set format "$_flag_f"
+else
+    set format '%Y %b %d %H:%M:%S'
+end
+
+if set -q _flag_l
+    set limit "$_flag_l"
+else
+    set limit '1000'
+end
+
+set output
+
+for repo in $argv
+    if not test -d "$repo"
+        echo "$script: Could not find repo \"$repo\"; exiting." >&2
+        exit 1
+    end
+    cd "$repo"
+    set -l reponame (path basename "$repo")
+    set -a output (git log --pretty="format:%ct - $reponame - %s" 2>/dev/null)
+    cd -
+end
+
+set sorted (printf '%s\\n' $output | sort -k 1 | tail -$limit)
+
+for line in $sorted
+    string match --quiet --regex '^(?<date>[0-9]+) - (?<text>.+)$' "$line"
+    printf '%s - %s\n' "$(date -d @$date "+$format")" "$text"
+end

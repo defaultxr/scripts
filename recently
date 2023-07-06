@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+# recently - get a list of recently-modified files in this directory and subdirectories, most recent first
+
+if command -qs bfs
+    set find bfs
+    set -e extra_args
+    # set extra_args "-color" # FIX: this is broken right now. only provide this argument when we know we're not being piped to another command.
+else
+    set find find
+    set extra_args ""
+end
+
+# %T@ = file's last modification time in seconds since Jan 1 1970, with fractional part
+# %p = file's name.
+command $find . $argv $extra_args -type f -printf '%T@ %p\n' | sort -k 1 -n | sed 's/^[^ ]* //' | tac

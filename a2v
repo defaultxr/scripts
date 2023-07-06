@@ -13,7 +13,7 @@
 
 # examples:
 #
-# use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.avi' in the current directory:
+# use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.mp4' in the current directory:
 # a2v cover.jpg happybirthday.mp3
 #
 # use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.ogv as the output filename:
@@ -37,7 +37,7 @@ if test -n "$_flag_h"
     echo
     echo "example: a2v -i foo.jpg -a bar.mp3 -o blah.avi"
     echo "example: a2v foo.jpg bar.mp3"
-    echo "in the second example, the output filename is automatically set to \"bar.avi\"."
+    echo "in the second example, the output filename is automatically set to \"bar.mp4\"."
 end
 
 set image "$_flag_i"
@@ -65,7 +65,7 @@ end
 if test -z "$output"
     set output $argv[1]
     if test -z "$output"
-        set output (string split -m 1 -r '.' "$audio")[1]".avi"
+        set output (string split -m 1 -r '.' "$audio")[1]".mp4"
         echo "Assuming output filename '$output'."
     end
     set argv $argv[2..]

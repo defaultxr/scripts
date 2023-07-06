@@ -1,0 +1,26 @@
+#!/usr/bin/env fish
+# print the first file from each directory in CWD.
+# with an argument, print a random file from each directory instead of the first one.
+
+if test $argv[1] = '-'
+    function gen_func
+        cat
+    end
+else
+    function gen_func
+        find $argv[1] -not -type d
+    end
+end
+
+if contains '--shuffle' $argv
+    alias sort_func 'shuf'
+else
+    alias sort_func 'sort'
+end
+
+for i in (find -maxdepth 1 -type d | tail -n +2)
+    gen_func (realpath $i) | sort_func | head -1
+end
+
+functions -e gen_func
+functions -e sort_func

@@ -1,0 +1,41 @@
+#!/usr/bin/env fish
+# fixperms - recursively fix permissions on a file or directory.
+
+argparse -n fixperms 'h/help' 'v/verbose' 'c/confirm' 'n/no-recurse' 'd/dry' -- $argv
+
+if set -q _flag_h
+    echo "fixperms - recursively fix permissions on a file or directory."
+    echo "Usage: fixperms [arguments] [files-and-directories]"
+    echo
+    echo "  -h/--help       - Print help and exit."
+    echo "  -v/--verbose    - Print the name of each file after correcting its permissions."
+    echo "  -c/--confirm    - Don't ask for confirmation to run."
+    echo "  -n/--no-recurse - Don't recurse into subdirectories."
+    echo "  -d/--dry        - Dry run; only print files/directories with wrong permissions."
+    exit
+end
+
+if not set -q _flag_d; and not set -q _flag_c
+    if not ask-yes-no --prompt="Really fix permissions on $(count $argv) items? [y/N] " --default=1
+        exit
+    end
+end
+
+if set -q _flag_n
+    set -- recurse -maxdepth 0
+end
+
+if set -q _flag_v
+    set -- verbose -print
+end
+
+if set -q _flag_d
+    set -- fexec ls -l
+    set -- dexec ls -ld
+else
+    set -- fexec chmod 644
+    set -- dexec chmod 755
+end
+
+find $argv $recurse -type f -not -perm 644 -exec $fexec '{}' \; $verbose
+find $argv $recurse -type d -not -perm 755 -exec $dexec '{}' \; $verbose

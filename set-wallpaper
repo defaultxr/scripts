@@ -1,0 +1,79 @@
+#!/usr/bin/env fish
+# set-wallpaper - Set the desktop wallpaper(s).
+
+# settings:
+
+set wallpapers_file ~/misc/stow/wallpapers/wallpapers.txt
+
+# code:
+
+argparse -n set-wallpaper 'h/help' 's/screen=' 'r/random' 'c/color=' 'g/grey' 'b/black' 'w/white' -- $argv
+
+if set -q _flag_h
+    echo "set-wallpaper - Set the desktop wallpaper(s)."
+    echo "Usage: set-wallpaper [arguments] [image]"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -s/--screen - Set which screen to apply the wallpaper to."
+    echo "  -r/--random - Pick and set a random wallpaper from $wallpapers_file (Default action if no wallpaper is specified)."
+    echo "  -c/--color  - Set the background to a specific color." # FIX: make this, and make it so that it will stop the random wallpapers until the next time --random is invoked
+    echo "  -g/--grey   - Set the background to grey."
+    echo "  -b/--black  - Set the background to black."
+    echo "  -w/--white  - Set the background to white."
+    exit
+end
+
+if set -q _flag_g
+    exec set-wallpaper --color=333333
+end
+
+if set -q _flag_b
+    exec set-wallpaper --color=000000
+end
+
+if set -q _flag_w
+    exec set-wallpaper --color=FFFFFF
+end
+
+function random_wallpaper -d "Get the filename of a random wallpaper from the wallpapers file."
+    cat $wallpapers_file | shuf | head -1
+end
+
+function set_screen_wallpaper -d "Set the specified screen's wallpaper. Without a second argument, pick a random wallpaper."
+    set -l screen (math "($argv[1] + 2) ^ 2")
+    if set -q argv[2]
+        set wallpaper "$argv[2]"
+    else
+        set wallpaper (random_wallpaper)
+    end
+    hsetroot -screens $screen -center "$wallpaper"
+end
+
+if test (count $argv) -eq 1
+    set wallpaper "$argv[1]"
+end
+
+if set -q _flag_c
+    hsetroot -solid "#$_flag_c"
+    exit
+end
+
+if not set -q _flag_s
+    set -l screens (xrandr --listmonitors | head -1 | string match --regex --groups-only 'Monitors: (\d+)')
+    # hsetroot version:
+    # for screen in (seq 0 (math $screens - 1))
+    #     echo screen "$screen"
+    #     set_screen_wallpaper $screen $wallpaper
+    # end
+    # set screens (xrandr --listmonitors | tail +2 | string match)
+    # until https://github.com/himdel/hsetroot/issues/14 is fixed, we use feh
+    if not set -q wallpaper
+        for screen in (seq $screens)
+            set -a wallpaper (random_wallpaper)
+        end
+    end
+    feh --no-fehbg --bg-fill $wallpaper
+    exit
+end
+
+set_screen_wallpaper "$_flag_s" $wallpaper

@@ -20,7 +20,7 @@ set len (math (string length "$package") + 2)
 set files
 
 # ignore directories
-for file in (y -Ql "$package" | string sub --start "$len")
+for file in (pacman -Ql "$package" | string sub --start "$len")
     if not string match --quiet '*/' "$file"
         set -a files "$file"
     end

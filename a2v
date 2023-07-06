@@ -1,5 +1,4 @@
 #!/usr/bin/env fish
-
 # a2v - "audio to video". generate a video from a sound file and an image.
 # useful for when you want to upload music to youtube or other video sharing sites.
 # note: (for now) the image file can't be a gif.

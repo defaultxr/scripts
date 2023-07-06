@@ -1,5 +1,4 @@
 #!/usr/bin/env fish
-
 # sshot - take a screenshot.
 # avoids the junk appearing in the screenshot when scrot is used in selection mode.
 # also automatically copies the path to the screenshot to the clipboard (pass -C to prevent this).

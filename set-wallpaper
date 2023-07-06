@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# set-wallpaper - Set the desktop wallpaper(s).
+# set-wallpaper - Set the desktop background, either to a solid color, or to a specified image.
 
 # settings:
 
@@ -10,7 +10,7 @@ set wallpapers_file ~/misc/stow/wallpapers/wallpapers.txt
 argparse -n set-wallpaper 'h/help' 's/screen=' 'r/random' 'c/color=' 'g/grey' 'b/black' 'w/white' -- $argv
 
 if set -q _flag_h
-    echo "set-wallpaper - Set the desktop wallpaper(s)."
+    echo "set-wallpaper - Set the desktop background, either to a solid color, or to a specified image."
     echo "Usage: set-wallpaper [arguments] [image]"
     echo
     echo "  -h/--help   - Print help and exit."

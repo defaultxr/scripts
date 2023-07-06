@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# Generate a QR code from the text in the clipboard.
+
+c | qr -

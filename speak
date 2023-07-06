@@ -1,0 +1,72 @@
+#!/usr/bin/env fish
+
+argparse -n speak --ignore-unknown 'h/help' 'i/stdin' 'o/output=' 'e/engine=' -- $argv
+
+if test -n "$_flag_h"
+    echo "speak - Speak text using a text-to-speech."
+    echo "Usage: speak [arguments] [text]"
+    echo
+    echo "  -h/--help    - Print help and exit."
+    echo "  -/-i/--stdin - Read text from stdin."
+    echo "  -o/--output  - Write output to a file instead of playing."
+    echo "  -e/--engine  - Select a specific engine (provide without selection to list available)"
+    exit
+end
+
+set engines espeak say flite
+
+set engine "$_flag_e"
+
+if test -z "$engine"
+    for i in $engines
+        if command -qs "$i"
+            set engine "$i"
+            break
+        end
+    end
+    if test -z "$engine"
+        echo "speak: no supported engine available"
+        exit 1
+    end
+else
+    if not contains "$engine" $engines
+        echo "speak: unknown engine \"$engine\""
+        exit 1
+    end
+end
+
+set stdin 0
+
+set d_idx (contains -i -- - $argv)
+if test -n "$_flag_i"; or test -n "$d_idx"
+    set stdin 1
+    if test -n "$d_idx"
+        set -e argv[$d_idx]
+    end
+end
+
+if test "$engine" = 'espeak'
+    set extra
+    if test $stdin = 1
+        set -a extra '--stdin'
+    end
+    if test -n "$_flag_o"
+        set -a extra -w "$_flag_o"
+    end
+    espeak $extra $argv
+else if test "$engine" = 'say'
+    if test $stdin = 1; or test -n "$_flag_o"
+        echo "speak: error: --stdin and --output are not yet implemented for macOS."
+        exit 1
+    end
+    say $argv
+else if test "$engine" = 'flite'
+    set extra
+    if test $stdin = 1
+        set -a extra -f -
+    end
+    if test -n "$_flag_o"
+        set -a extra -o "$_flag_o"
+    end
+    flite $extra -t "$argv"
+end

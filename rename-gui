@@ -2,11 +2,13 @@
 # rename-gui - Rename a file via a GUI popup.
 # Requirements: zenity
 
-argparse -n rename-gui 'h/help' 'q/quiet' 'e/exact' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "rename-gui - Rename a file via a GUI popup."
-    echo "Usage: rename-gui [arguments]"
+argparse -n "$script" 'h/help' 'q/quiet' 'e/exact' -- $argv
+
+if set -q _flag_h
+    echo "$script - Rename a file via a GUI popup."
+    echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help  - Print help and exit."
     echo "  -q/--quiet - Don't print any output."

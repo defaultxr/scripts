@@ -1,0 +1,11 @@
+#!/usr/bin/env fish
+# eww - emacs web wowser
+# open a URL in Emacs' browser eww.
+
+if test (count $argv) -lt 1
+    echo "eww: a URL to browse is required."
+    exit 1
+end
+
+set url $argv[1]
+emacsclient -e "(eww \"$url\")"

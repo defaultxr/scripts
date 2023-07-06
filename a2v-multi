@@ -1,0 +1,43 @@
+#!/usr/bin/env fish
+# a2v-multi - Run a2v on multiple audio files.
+# Uses GNU parallel to convert multiple files in a multi-threaded fashion, i.e. as quickly as your CPU can handle.
+# Each process is nice'd to reduce disruption to other processes on the system.
+
+# settings:
+
+set log_location "/tmp/convert-to-opus-logs"
+
+# code:
+
+argparse -n a2v-multi 'h/help' 'v/verbose' -- $argv
+
+if set -q _flag_h
+    echo "a2v-multi - Run a2v on multiple audio files."
+    echo "Usage: a2v-multi [arguments] [image] [audio files]"
+    echo
+    echo "  -h/--help    - Print help and exit."
+    echo "  -v/--verbose - Print extra information."
+    exit
+end
+
+set image "$argv[1]"
+
+set audio_files $argv[2..]
+
+set num_audio_files (count $audio_files)
+
+rm -rf "$log_location"
+mkdir -p "$log_location"
+
+if set -q _flag_v
+    echo "Image: $image."
+    echo "Audio files ($num_audio_files): $audio_files"
+    echo "Log file location: $log_location"
+    echo "Converting..."
+end
+
+parallel --progress --color --joblog "$log_location/log.txt" --results "$log_location" --nice 10 a2v -i "$image" -a {} ::: $audio_files
+
+if set -q _flag_v
+    echo "Done!"
+end

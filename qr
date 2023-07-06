@@ -1,0 +1,40 @@
+#!/usr/bin/env fish
+# Generate a QR code from a file or input.
+# With -w or --wifi flag, generate a qr code to connect to the current wifi network with the provided password.
+
+argparse -n qr 't/text=' 'w/wifi=' -- $argv
+
+if test -n "$_flag_w"
+    # format should be:
+    # WIFI:T:WPA;S:ssid;P:password;;
+    echo "w/wifi flag is not yet implemented."
+    exit 1
+end
+
+set stdin (if test -z "$_flag_t"; and test "$argv[1]" = '-'; echo -n "yes"; end)
+
+set head (if test "$stdin" = "yes"
+    c | head -1 -
+else
+    if test -n "$_flag_t"
+        echo $_flag_t[1]
+    else
+        head -1 $argv
+    end
+end)
+
+set append (string sub -l 16 $head | string replace -a '/' '-') 
+set infile (mktemp --suffix=.$append.txt)
+set outfile (mktemp --suffix=.$append.png)
+
+if test "$stdin" = "yes"
+    cat >$infile
+else if test -n "$_flag_t"
+    echo "$_flag_t" >$infile
+else
+    cat $argv >$infile
+end
+
+qrencode -r $infile -o $outfile -s 5
+and open $outfile
+rm $infile $outfile

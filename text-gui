@@ -63,12 +63,12 @@ def makeWindow(text, title=None, width=default_width, height=default_height, max
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Show arbitrary text in a simple GUI.")
-  parser.add_argument("-T", "--title", dest="title", help="the title of the window")
-  parser.add_argument("-t", "--text", dest="text", help="the text of the window; if not provided, will be read from stdin")
-  parser.add_argument("-W", "--width", dest="width", type=int, help="the window's initial width")
-  parser.add_argument("-H", "--height", dest="height", type=int, help="the window's initial height")
-  parser.add_argument("--max-width", dest="max_width", type=int, help="the window's max width")
-  parser.add_argument("--max-height", dest="max_height", type=int, help="the window's max height")
+  parser.add_argument("-T", "--title", dest="title", help="The title of the window")
+  parser.add_argument("-t", "--text", dest="text", help="The text of the window; if not provided, will be read from stdin")
+  parser.add_argument("-W", "--width", dest="width", type=int, help="The window's initial width")
+  parser.add_argument("-H", "--height", dest="height", type=int, help="The window's initial height")
+  parser.add_argument("--max-width", dest="max_width", type=int, help="The window's max width")
+  parser.add_argument("--max-height", dest="max_height", type=int, help="The window's max height")
 
   args = parser.parse_args()
 

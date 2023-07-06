@@ -1,0 +1,170 @@
+#!/usr/bin/env fish
+# capture-audio - Capture the audio output going to the speakers and record it to a file.
+# FIX: not done yet:
+# - better output when starting/stopping
+
+# settings:
+
+# directory to save the recordings
+set directory ~/misc/snd/jack-cap/
+
+# default filename (not including the extension)
+set filename "rec-$(date '+%Y-%m-%d-%H-%M')"
+
+# whether to copy the filename to the clipboard by default
+set copy 'y'
+
+# the default format to record in
+set format 'flac'
+
+# code:
+
+argparse -n capture-audio 'h/help' 'a/action=' 's/source=' 'c/copy=?' 'f/format=' -- $argv
+
+if set -q _flag_h
+    echo "capture-audio - Capture the audio output going to the speakers and record it to a file."
+    echo "Usage: capture-audio [arguments] [action]"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -a/--action - Specify the action to perform; can be one of: toggle (default), record, stop, status, return."
+    echo "  -s/--source - Specify the audio source; can be one of: output (default), mic."
+    echo "  -c/--copy   - Whether to copy the filename of the output to the clipboard when stopping recording (default: $copy)."
+    echo "  -f/--format - Specify the output file format (default: $format)."
+    exit
+end
+
+if set -q _flag_f
+    if contains "$_flag_f" 'wav' 'flac' 'opus'
+        set format "$_flag_f"
+    else
+        echo -- "$(status filename): unknown format: \"$_flag_f\"."
+        exit 4
+    end
+end
+
+if set -q _flag_s
+    if not contains "$_flag_s" 'output' 'mic'
+        echo "$(status filename): No such source known: $_flag_s"
+        exit 2
+    else
+        set source "$_flag_s"
+    end
+end
+
+if set -q _flag_c
+    if test -z "$_flag_c"
+        set copy 'y'
+    else
+        set copy "$_flag_c"
+    end
+end
+
+if string match -qir '^=?[y1]' "$copy"
+    set copy 'y'
+else
+    set copy 'n'
+end
+
+set action 'toggle'
+
+if set -q _flag_a
+    set action "$_flag_a"
+else
+    if test (count $argv) -gt '0'
+        set action "$argv[1]"
+    end
+end
+
+function capture-status -d "If audio is currently being captured, echoes the pid, elapsed time, and the filename being written to. Otherwise, returns false."
+    if ps -C jack_capture -o pid,etime,args --no-headers | string match -qr '^\\s*(?<pid>\\S+)\\s+(?<etime>\\S+)\\s+.+\\s+(?<open_file>\\S+)$'
+        echo "$pid"
+        echo "$etime"
+        echo "$open_file"
+        true
+    else
+        false
+    end
+end
+
+function echo-status -d "Echo the status in a human-readable way."
+    if test (count $argv) -gt 0
+        echo "Status:   Recording."
+        echo "PID:      $cstatus[1]"
+        echo "Time:     $cstatus[2]"
+        echo "Filename: $cstatus[3]"
+    else
+        echo "Status: Stopped."
+    end
+end
+
+function make-filename -d "Echo the full path to the recording."
+    set -l format $argv[1]
+    echo -- "$directory$filename.$format"
+end
+
+set action_taken
+
+function start-recording
+    if test "$source" = 'mic'
+        set -- mic_args '--port' 'system:capture_1' '--port' 'system:capture_2'
+    end
+    # nice -n -5 ionice -c 2 -n 0
+    # --format "$format"
+    # XXX jack_capture doesn't seem to handle writing flac sometimes, for example when i start playing something in SuperCollider. so instead we record as wav and then convert to the requested format afterwards.
+    jack_capture --daemon $mic_args "$(make-filename wav)" &
+    set action_taken 'started'
+end
+
+function stop-recording
+    if test (count $argv) -lt 1
+        if set cstatus (capture-status)
+            kill "$cstatus[1]"
+        else
+            echo "$(status filename): No recording is currently being made."
+            exit 1
+        end
+    else
+        kill "$argv[1]"
+    end
+    set action_taken 'ended'
+end
+
+switch "$action"
+    case 'status'
+        if set cstatus (capture-status) # FIX: allow the output format to be specified
+            echo-status $cstatus
+        else
+            echo-status
+        end
+        exit
+    case 'toggle'
+        if set cstatus (capture-status)
+            stop-recording "$cstatus[1]"
+        else
+            start-recording
+        end
+    case 'start' 'record' 'rec'
+        start-recording
+    case 'stop' 'end'
+        stop-recording
+    case 'return'
+        if capture-status >/dev/null
+            exit 0
+        else
+            exit 1
+        end
+    case '*'
+        echo "$(status filename): Unknown action: $action"
+        exit 3
+end
+
+if test "$action_taken" = 'ended'
+    if not test "$format" = 'wav'
+        set -l full_filename "$(make-filename wav)"
+        convert-audio --format="$format" --delete "$full_filename"
+    end
+    if test 'y' = "$copy"
+        set -l result_filename "$(make-filename $format)"
+        echo -n -- "$result_filename" | fish_clipboard_copy
+    end
+end

@@ -1,0 +1,20 @@
+#!/usr/bin/env fish
+# lyrics-gui - Open a window showing the lyrics of MPD's current track.
+
+# code:
+
+argparse -n lyrics-gui 'h/help' -- $argv
+
+set -- script "$(basename (status filename))"
+
+if set -q _flag_h
+    echo "$script  - Open a window showing the lyrics of MPD's current track."
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set filename (m file)
+
+lyrics | text-gui -T "Lyrics for "(mpc | head -1) --action "Control-s=set-lyrics-tag --file=\"$(string escape \"$filename\")\""

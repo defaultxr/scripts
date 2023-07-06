@@ -1,0 +1,32 @@
+#!/usr/bin/env fish
+# find-broken-symlinks - Get a list of symlinks whose target does not exist.
+# this is not really needed if you remember that 'find -xtype l' finds broken symlinks.
+
+argparse -n find-broken-symlinks 'h/help' 'd/directory=' -- $argv
+
+if set -q _flag_h
+    echo "find-broken-symlinks - Get a list of symlinks whose target does not exist."
+    echo "Usage: find-broken-symlinks [arguments] [directory]"
+    echo
+    echo "  -h/--help      - Print help and exit."
+    echo "  -d/--directory - Specify the directory to recursively search in (default: current directory)."
+    exit
+end
+
+set directory '.'
+
+if set -q _flag_d
+    set directory "$_flag_d"
+else if test (count $argv) -gt 0
+    if not string match -- '-*' "$argv[1]"
+        set directory "$argv[1]"
+        set argv $argv[2..]
+    end
+end
+
+if not test -d "$directory"
+    echo "$(status filename): Directory $directory does not exist."
+    exit 1
+end
+
+find "$directory" -xtype l $argv

@@ -1,0 +1,29 @@
+#!/usr/bin/env fish
+# http-server - just host the current directory on http, port 10337.
+#
+# this is basically just a simple wrapper script for python's http.server;
+# https://docs.python.org/3/library/http.server.html
+
+argparse -n http-server 'p/port=' 'd/directory=' 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "http-server - just host the current directory on http, port 10337."
+    echo "Usage: http-server [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    echo "  -p/--port - Set the port number to bind to."
+    echo "  -d/--directory - Set the root directory to serve from (defaults to current)."
+    exit
+end
+
+set port 10337
+if set -q _flag_p
+    set port "$_flag_p"
+end
+
+set directory "$(pwd)"
+if set -q _flag_d
+    set directory "$_flag_d"
+end
+
+python -m http.server --directory "$directory" "$port"

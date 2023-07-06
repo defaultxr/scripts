@@ -1,0 +1,21 @@
+#!/usr/bin/env fish
+# remove-unneeded-packages - Ask to remove all system packages installed as dependencies that are no longer needed.
+
+argparse -n remove-unneeded-packages 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "remove-unneeded-packages - ask to remove all system packages installed as dependencies that are no longer needed."
+    echo "Usage: remove-unneeded-packages [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set distro "$(grep '^ID=' /etc/os-release | string sub --start 4)"
+
+if contains "$distro" 'arch' 'archarm' # arch linux
+    sudo pacman -Rs (sudo pacman -Qdt | string match --all --regex --groups-only '^(\\S+)\\s+\\S+')
+else
+    echo "Unknown distro: \"$distro\""
+    exit 1
+end

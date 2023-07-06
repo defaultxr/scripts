@@ -3,13 +3,14 @@
 # basically a shortcut for case-insensitive searching anywhere in a file's name.
 # requires either bfs or find.
 
-argparse -n loc 'h/help' -- $argv
+argparse -n loc 'h/help' '1/1-dir' -- $argv
 
 if test -n "$_flag_h"
     echo "loc - locate files by name. effectively just a shortcut for find . -iname '*QUERY*'"
     echo "Usage: loc [arguments] [search terms]"
     echo
-    echo "  -h/--help - Print help and exit."
+    echo "  -h/--help  - Print help and exit."
+    echo "  -1/--1-dir - Only search in the current directory (don't recurse into subdirectories)."
     exit
 end
 
@@ -17,4 +18,8 @@ if not command -qs bfs
     alias bfs 'find'
 end
 
-bfs . -iname '*'(string join '*' $argv)'*'
+if set -q _flag_1
+    set -- one_dir -maxdepth 1
+end
+
+bfs . $one_dir -iname '*'(string join '*' $argv)'*'

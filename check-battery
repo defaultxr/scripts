@@ -1,0 +1,17 @@
+#!/usr/bin/env fish
+# check the battery and pop up a message on the OSD when it's getting low
+
+# settings
+
+set low_percent 20
+
+# code
+
+set -x DBUS_SESSION_BUS_ADDRESS "unix:path=/run/user/$(id --user)/bus"
+set -x DISPLAY :0.0
+
+set -l percent (acpi | string match -r '([0-9]+)%,?' | tail -1)
+
+if test $percent -lt $low_percent
+    notify-send -u critical -h string:x-dunst-stack-tag:check-battery "Battery low" "Currently at $percent%."
+end

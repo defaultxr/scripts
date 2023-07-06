@@ -1,0 +1,18 @@
+#!/usr/bin/env fish
+# tmsu-rm - trash or delete a file, then run tmsu repair to remove it from the database.
+# FIX: add an argument to force using rm instead of trash, and make the default behavior to only use trash-put and error if it's not found.
+
+argparse -n tmsu-rm 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "tmsu-mv - trash or delete a file, then run tmsu repair to remove it from the database."
+    echo "Usage: tmsu-rm [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set rm_cmd (if command -qs trash-put; echo 'trash-put'; else; echo 'rm'; end)
+
+command "$rm_cmd" $argv
+tmsu untag --all $argv

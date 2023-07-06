@@ -1,11 +1,24 @@
 #!/usr/bin/env fish
-# check the battery and pop up a message on the OSD when it's getting low
+# check-battery - Check the battery and notify if it's low.
+# May be useful to set as a cron job.
 
-# settings
+# settings:
 
 set low_percent 20
 
-# code
+# code:
+
+set -- script "$(basename (status filename))"
+
+argparse -n "$script" 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script  - Check the battery and pop up a message on the OSD if it's low."
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
 
 set -x DBUS_SESSION_BUS_ADDRESS "unix:path=/run/user/$(id --user)/bus"
 set -x DISPLAY :0.0

@@ -26,7 +26,7 @@ set input "$argv[1]"
 set orig (path basename "$input")
 set full_orig (path resolve "$input")
 set pext (path extension "$input")
-set dir (dirname "$full_orig")
+set dir (path dirname "$full_orig")
 
 if not set -q _flag_e
     set preserve " (preserving extension)"

@@ -1,0 +1,32 @@
+#!/usr/bin/env fish
+# tmsu-mv - move a file, then run tmsu repair for the new name and location.
+
+argparse -n tmsu-mv 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "tmsu-mv - move a file, then run tmsu repair for the new name and location."
+    echo "Usage: tmsu-mv [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set destination $argv[-1]
+set maybe_sources $argv[1..-2]
+set sources
+
+for source in $maybe_sources
+    if test -e $source
+        set -a sources $source
+    else
+        if not string match -q -- '-*' $source
+            echo "tmsu-mv: source $source doesn't appear to exist, nor does it seem to be a command option."
+        end
+    end
+end
+
+for i in (mv -v $argv)
+    echo "$i" | string match -qr "renamed '(?<from>.+?)' -> '(?<to>.+?)'"
+    echo tmsu repair --manual $from $to
+    tmsu repair --manual $from $to
+end

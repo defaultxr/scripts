@@ -22,6 +22,9 @@ title_bg = "#111"
 scroll_fg = text_fg
 scroll_bg = text_bg
 
+# actions
+actions = []
+
 # code
 
 import os, argparse
@@ -33,6 +36,17 @@ import tkinter.font as tkFont
 def changeFontSize(font, change):
   """Add CHANGE to the size of the font."""
   font.configure(size=font["size"]+change)
+
+def get_input_text(widget):
+  """Get the string of text in the input field."""
+  return ''.join(map(lambda x: x[1], widget.dump('1.0', END, text=True)))[:-1]
+
+def run_action(widget, command):
+  """Run COMMAND, passing the text of WIDGET to its stdin."""
+  text = get_input_text(widget)
+  pipe = os.popen(command, 'w')
+  pipe.write(text)
+  pipe.close()
 
 def makeWindow(text, title=None, width=default_width, height=default_height, max_width=default_max_width, max_height=default_max_height):
   """Create the text-gui window."""
@@ -59,6 +73,10 @@ def makeWindow(text, title=None, width=default_width, height=default_height, max
   root.bind("<Escape>", lambda e: quit())
   root.bind("<Control-g>", lambda e: quit())
 
+  for action in actions:
+    binding, command = action.split('=', maxsplit=1)
+    root.bind("<" + binding + ">", lambda e: run_action(textbox, command))
+
   root.mainloop()
 
 if __name__ == "__main__":
@@ -69,6 +87,7 @@ if __name__ == "__main__":
   parser.add_argument("-H", "--height", dest="height", type=int, help="The window's initial height")
   parser.add_argument("--max-width", dest="max_width", type=int, help="The window's max width")
   parser.add_argument("--max-height", dest="max_height", type=int, help="The window's max height")
+  parser.add_argument("-a", "--action", dest="action", nargs='*', type=str, help="Set the command to run when a specified key is pressed. The command is passed the textual contents of the GUI via stdin. Example: --action Control-s=foo will send the text to the stdin of \"foo\" when ctrl+s is pressed. Note that this argument can be passed multiple times.")
 
   args = parser.parse_args()
 
@@ -78,5 +97,6 @@ if __name__ == "__main__":
   height = args.height or default_height
   max_width = args.max_width or default_max_width
   max_height = args.max_height or default_max_height
+  actions = args.action or []
 
   makeWindow(text, title=title, width=width, height=height, max_width=max_width, max_height=max_height)

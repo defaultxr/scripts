@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# a2v-multi - Run a2v on multiple audio files.
+# a2v-multi - Run a2v on multiple audio files in parallel.
 # Uses GNU parallel to convert multiple files in a multi-threaded fashion, i.e. as quickly as your CPU can handle.
 # Each process is nice'd to reduce disruption to other processes on the system.
 

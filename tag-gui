@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-# tag-gui - edit TMSU tags of one or more files with a simple GUI.
-# shows the filename (or the common directory if tagging multiple) and the previous set of tags, and allows you to edit the set, with tab-completion of tag names.
+# tag-gui - Edit the TMSU tags for the specified file(s) with a tab-completing gui.
+# Shows the filename (or the common directory if tagging multiple) and the previous set of tags, and allows you to edit the set, with tab-completion of tag names.
 
 # TODO:
 # - make the completions list sort by the number of uses each tag has (and also show the number next to each tag)
@@ -437,7 +437,7 @@ def make_gui():
 if __name__ == '__main__':
   global root, files, alltags, tags
   if len(sys.argv) == 2 and (sys.argv[1] == '--help' or sys.argv[1] == '-h'):
-    print("tag-gui - edit TMSU tags of one or more files with a simple GUI.")
+    print("tag-gui - A simple GUI to edit TMSU tags of one or more files.")
     print("Usage: tag-gui [arguments] [files]")
     print()
     print("  -h/--help   - Print help and exit.")

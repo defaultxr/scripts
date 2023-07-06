@@ -1,5 +1,6 @@
 #!/usr/bin/env fish
-# check-memory-usage - check current memory and swap usage and warn when low.
+# check-memory-usage - Check current memory and swap usage and notify if it's low.
+# May be useful to set as a cron job.
 
 # settings:
 
@@ -43,4 +44,3 @@ if test -n "$_flag_f"; or test $mem_pct -gt $threshold; and test $swap_pct -gt $
         notify-send 'Memory usage warning' $output
     end
 end
-

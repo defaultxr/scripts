@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 # find-broken-symlinks - Get a list of symlinks whose target does not exist.
-# this is not really needed if you remember that 'find -xtype l' finds broken symlinks.
+# This is basically just an easier-to-remember alias for `find -xtype l`.
 
 argparse -n find-broken-symlinks 'h/help' 'd/directory=' -- $argv
 

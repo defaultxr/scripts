@@ -1,5 +1,6 @@
 #!/usr/bin/env fish
 # check-df - Check disk free; print a message if free space of any partitions are below a threshold.
+# May be useful run from your shell init file.
 
 # settings:
 

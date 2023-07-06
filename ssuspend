@@ -1,12 +1,11 @@
 #!/usr/bin/env fish
-# ssuspend - "screen suspend"
-# suspends your monitor, of course!
+# ssuspend - "Screen suspend". Simply turns off your monitor(s).
 # 'ssuspend on' to unsuspend.
 
 argparse -n ssuspend 'h/help' -- $argv
 
 if test -n "$_flag_h"
-    echo "ssuspend - suspend screens."
+    echo "ssuspend - \"Screen suspend\". Simply turns off your monitor(s)."
     echo "Usage: ssuspend [arguments] [on/off]"
     echo
     echo "  -h/--help - Print help and exit."

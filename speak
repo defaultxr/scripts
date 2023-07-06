@@ -1,9 +1,10 @@
 #!/usr/bin/env fish
+# speak - Speak text using a text-to-speech engine.
 
 argparse -n speak --ignore-unknown 'h/help' 'i/stdin' 'o/output=' 'e/engine=' -- $argv
 
 if test -n "$_flag_h"
-    echo "speak - Speak text using a text-to-speech."
+    echo "speak - Speak text using a text-to-speech engine."
     echo "Usage: speak [arguments] [text]"
     echo
     echo "  -h/--help    - Print help and exit."

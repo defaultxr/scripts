@@ -1,11 +1,11 @@
 #!/usr/bin/env fish
-# directory-difference - get a list of files that differ between directories
+# directory-difference - List files that only exist in one of the two specified dirs.
 # usage: directory-difference DIR-A DIR-B
 
 argparse -n directory-difference 'h/help' 'a/only-a' 'b/only-b' 'd/maxdepth=' -- $argv
 
 if test -n "$_flag_h"
-    echo "directory-difference - List the files that only occur in one of the two directories specified."
+    echo "directory-difference - List files that only exist in one of the two specified dirs."
     echo "Usage: directory-difference [arguments] directory-a directory-b"
     echo
     echo "  -h/--help - Print help and exit."

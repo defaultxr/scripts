@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# findu - Find unsorted files (anything not found by finda, findc, findd, etc.)
+# findu - Find unsorted files (anything not found by finda, findc, findd, etc).
 # FIX: just make it possible to shell out to findtype in this one too.
 
 set -- script "$(basename (status filename))"

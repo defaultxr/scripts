@@ -1,12 +1,11 @@
 #!/usr/bin/env fish
-# loc - locate files by name
-# basically a shortcut for case-insensitive searching anywhere in a file's name.
-# requires either bfs or find.
+# loc - Locate files by name. Basically a shortcut for a case-insensitive filename search.
+# requirements: bfs or find.
 
 argparse -n loc 'h/help' '1/1-dir' -- $argv
 
 if test -n "$_flag_h"
-    echo "loc - locate files by name. effectively just a shortcut for find . -iname '*QUERY*'"
+    echo "loc - Locate files by name. Basically a shortcut for a case-insensitive filename search."
     echo "Usage: loc [arguments] [search terms]"
     echo
     echo "  -h/--help  - Print help and exit."

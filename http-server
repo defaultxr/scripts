@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# http-server - just host the current directory on http, port 10337.
+# http-server - Quickly spin up a basic HTTP server for a directory.
 #
 # this is basically just a simple wrapper script for python's http.server;
 # https://docs.python.org/3/library/http.server.html
@@ -7,7 +7,7 @@
 argparse -n http-server 'p/port=' 'd/directory=' 'h/help' -- $argv
 
 if set -q _flag_h
-    echo "http-server - just host the current directory on http, port 10337."
+    echo "http-server - Quickly spin up a basic HTTP server for a directory."
     echo "Usage: http-server [arguments]"
     echo
     echo "  -h/--help - Print help and exit."

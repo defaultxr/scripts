@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+# synonyms - Get synonyms for a word.
+# requirements: dict
+
+argparse -n synonyms 'h/help' -- $argv
+
+if test -n "$_flag_h"
+    echo "synonyms - Get synonyms for a word."
+    echo "Usage: synonyms [arguments] WORD"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+dict -d moby-thesaurus $argv

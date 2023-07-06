@@ -23,7 +23,9 @@ set full_orig (realpath $input)
 set pext (path extension $input)
 set dir (dirname $full_orig)
 
-set preserve (if test -n "$_flag_e"; echo -n ""; else; echo -n " (preserving extension)"; end)
+if not set -q _flag_e
+    set preserve " (preserving extension)"
+end
 
 set new (zenity --entry --title="$script: $orig" --text="Rename '$orig'$preserve to:" --entry-text="$orig" --width=700)
 

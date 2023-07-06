@@ -1,0 +1,35 @@
+#!/usr/bin/env fish
+# check-df - Check disk free; print a message if free space of any partitions are below a threshold.
+
+# settings:
+
+set percent_warning 100 # warn if percent used is above this number
+set gb_free_warning 5 # warn if the amount of free GB is below this number
+
+# code:
+
+set -- script "$(basename (status filename))"
+
+argparse -n "$script" 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script  - Check disk free; print a message if free space of any partitions are below a threshold."
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set res (df -l -BG -x tmpfs -x devtmpfs -x squashfs --output=avail,pcent,target 2>/dev/null | tail -n +2)
+
+for i in $res
+    set split (string match -r '^\s*(?<avail>\S+)\s+(?<percent>\S+)\s+(?<target>\S+)' $i)
+    set avail_num (string replace -r '([A-Za-z]+)$' '' $avail)
+    set percent (string replace -a '%' '' $percent)
+    if string match -qr '^/(boot|efi|run/zram.-mount)$' $target
+        continue
+    end
+    if test $percent -gt $percent_warning; or test $avail_num -lt $gb_free_warning
+        printf "%s currently has ~%s disk free (%s%% used)!\n" $target $avail $percent
+    end
+end

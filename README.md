@@ -9,310 +9,464 @@ Even though I wrote them primarily for myself, all of these scripts should still
 The list of scripts follows. Each is listed with its requirements and a short description.
 
 ## `a2v`
+
 fish
+
 "Audio to video". generate a video from a sound file and an image. Useful, for example, if you want to upload music to YouTube or other sites.
 
 ## `a2v-multi`
+
 fish
+
 Run a2v on multiple audio files in parallel using [GNU parallel](https://www.gnu.org/software/parallel/). `nice`s the processes to run with a lower priority, to not disturb other processes on your system.
 
 ## `abbreviate-path`
+
 fish
+
 Abbreviate the path passed as an argument. Similar to fish's built-in `prompt_pwd` function.
 
 ## `ask-yes-no`
+
 fish
+
 Ask the user a yes or no question and return true (`0`) if yes, false (`1`) otherwise.
 
 ## `auto-rotate-image`
+
 fish
+
 Automatically correct image rotation based on its metadata.
 
 ## `autocrop`
+
 fish
+
 Automatically trim blank edges of an image. Copies the original image to /tmp first in case you want to restore it later.
 
 ## `bak`
+
 fish
+
 Quickly make a .bak backup copy of the specified file(s).
 
 ## `c`
+
 fish
+
 A convenient interface to the clipboard.
 
 ## `c-`
+
 fish
+
 Alias for `c -`; copy standard input to the clipboard.
 
 ## `capture-audio`
+
 fish
+
 Capture the audio output going to the speakers and record it to a file.
 
 ## `check-battery`
+
 fish
+
 Check the battery and notify if it's low. May be useful to set as a cron job.
 
 ## `check-df`
+
 fish
+
 Check disk free; print a message if free space of any partitions are below a threshold. May be useful run from your shell init file.
 
 ## `check-memory-usage`
+
 fish
+
 Check current memory and swap usage and notify if it's low. May be useful to set as a cron job.
 
 ## `content-aware-scale`
+
 fish
+
 Content-aware scale a video. See [ImageMagick's documentation](https://www.imagemagick.org/Usage/resize/#liquid-rescale) for more information about what this does, but basically, it can be used to make a video look silly. Examples: [one](https://www.youtube.com/watch?v=PwKABG6Wzdo), [two](https://www.youtube.com/watch?v=LYbgKh01daA), [three](https://www.youtube.com/watch?v=BCxzQF47dYQ).
 
 ## `convert-audio`
+
 fish
+
 Convert a set of audio files into a specified audio format. Uses GNU Parallel to parallelize the jobs to convert as fast as possible, `nice`ing the processes to run with a lower priority, to not disturb other processes on your system.
 
 ## `d`
+
 fish
+
 "Delete" (trash) a file, also removing it from any TMSU database.
 
 ## `define-selected`
+
 fish, dictd, xclip, text-gui
+
 Define the specified or selected word, showing the result in a popup dialog.
 
 ## `dir-diff`
+
 fish
+
 List files that only exist in one of the two specified dirs.
 
 ## `dirtour`
+
 fish
+
 Print the first file from each directory in CWD. With an argument, print a random file from each directory instead of the first one.
 
 ## `eman`
+
 fish
+
 Open a man page in Emacs.
 
 ## `eww`
+
 fish
+
 Emacs Web Wowser; open a URL in Emacs' web browser, [eww](https://www.gnu.org/software/emacs/manual/html_mono/eww.html).
 
 ## `filter`
+
 raku
+
 Filter a list of filenames, outputting only those whose extension denotes a specified "type" (i.e. audio, image, video, etc).
 
 ## `find-broken-symlinks`
+
 fish
+
 Get a list of symlinks whose target does not exist. This is basically just an easier-to-remember alias for `find -xtype l`.
 
 ## `finda`
+
 fish
+
 Find audio files.
 
 ## `findc`
+
 fish
+
 Find compressed files.
 
 ## `findd`
+
 fish
+
 Find directories.
 
 ## `findi`
+
 fish
+
 Find image files.
 
 ## `findmedia`
+
 fish
+
 Find media files (audio, images, video).
 
 ## `findtype`
+
 fish
+
 Find files of a specified type. This is used by `finda`, `findc`, `findd`, etc; it's simpler to just use those scripts instead of this one directly.
 
 ## `findu`
+
 fish
+
 Find unsorted files (anything not found by `finda`, `findc`, `findd`, etc).
 
 ## `findv`
+
 fish
+
 Find video files.
 
 ## `findvis`
+
 fish
+
 Find visual files (images, video).
 
 ## `fixperms`
+
 fish
+
 Recursively fix permissions on a file or directory.
 
 ## `git-multi-log`
+
 fish
+
 Merge and sort git log summaries for multiple repos.
 
 ## `http-server`
+
 fish
+
 Quickly spin up a basic HTTP server for a directory.
 
 ## `loc`
+
 fish, bfs or find
+
 Locate files by searching their names case-insensitively with [`bfs`](https://github.com/tavianator/bfs) or `find`.
 
 ## `locate-dominating-file`
+
 fish
+
 Look up in the directory hierarchy for a specified file. This can be used, for example, to check if we're in a git repository, by locating `.git`.
 
 ## `lsa`
+
 fish
+
 List audio files.
 
 ## `lsc`
+
 fish
+
 List compressed files.
 
 ## `lsd`
+
 fish
+
 List directories.
 
 ## `lsi`
+
 fish
+
 List image files.
 
 ## `lsu`
+
 fish
+
 List files of an unknown "type"; everything not audio, compressed, directories, images, or video. See also: `lsa`, `lsc`, `lsd`, `lsi`, `lsv`, `lsvis`.
 
 ## `lsv`
+
 fish
+
 List video files.
 
 ## `lsvis`
+
 fish
+
 List visual files (images, video).
 
 ## `lyrics`
+
 fish, clyrics, ffprobe (ffmpeg)
+
 Get the lyrics for the specified or currently-playing song.
 
 ## `lyrics-gui`
+
 fish
+
 Open a window showing the lyrics of MPD's current track.
 
 ## `move-gui`
+
 fish
+
 Move a file using a file selector gui. Accepts a list of files either as arguments or from stdin if `-` is the first argument.
 
 ## `mpls`
+
 fish
+
 List tracks in mpd's current playlist.
 
 ## `myip`
+
 fish
+
 Get your current public IP address.
 
 ## `p`
+
 fish
+
 Play media with mpv, joining its twitch chat via IRC (weechat) if it's a twitch stream. Once the stream is stopped, exits the channel.
 
 ## `pgr`
+
 fish
+
 `grep` for processes that match the arguments. Basically like `pgrep` but its output is meant to be readable by humans.
 
 ## `qr`
+
 fish
+
 Generate a QR code from a file or input. With `-w` or `--wifi` flag, generate a qr code to connect to the current wifi network with the provided password.
 
 ## `qrc`
+
 fish
+
 Generate a QR code from the text in the clipboard.
 
 ## `randomsong`
+
 fish
+
 Get a list of N random songs from your music directory.
 
 ## `recently`
+
 fish
+
 Get a list of recently-modified files in this directory and subdirectories, most recent first.
 
 ## `remove-unneeded-packages`
+
 fish
+
 Ask to remove all system packages installed as dependencies that are no longer needed.
 
 ## `rename-gui`
+
 fish, zenity
+
 Rename a file via a GUI popup.
 
 ## `rfile`
+
 fish
+
 Output a random file in the current directory. An argument can be provided to specify the number of subdirectories to look for a random file.
 
 ## `rg-package-files`
+
 fish
+
 Run ripgrep on all of the files (not directories) installed by a package.
 
 ## `romanize`
+
 python
+
 Romanize Japanese text from arguments or stdin. May be helpful for learning Japanese pronunciation.
 
 ## `run-if-not`
+
 fish
+
 Run a program if it's not already running.
 
 ## `set-title`
+
 fish
+
 Set the terminal window title.
 
 ## `set-wallpaper`
+
 fish
+
 Set the desktop wallpaper(s).
 
 ## `speak`
+
 fish
+
 Speak text using a text-to-speech engine.
 
 ## `sshot`
+
 fish
+
 Take a screenshot of the whole screen, a window, or a(n interactively-selected) region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
 
 ## `ssuspend`
+
 fish
+
 "Screen suspend". Simply turns off your monitor(s).
 
 ## `synonyms`
+
 fish, dictd
+
 Get synonyms for a word.
 
 ## `tag-count`
+
 fish
+
 Print all TMSU tags next to a count of their uses.
 
 ## `tag-gui`
+
 python
+
 Edit the [`TMSU`](https://github.com/oniony/TMSU) tags for the specified file(s) with a tab-completing gui. Shows the filename (or the common directory if tagging multiple) and the previous set of tags, and allows you to edit their tags, with tab-completion of tag names.
 
 ## `text-gui`
+
 python
+
 Show arbitrary text in a simple GUI. May be useful in scripts bound to window manager shortcuts or the like. The text is editable, and keybindings can be specified with `--action` arguments.
 
 ## `tmsu-mv`
+
 fish
+
 Move a file, then run `tmsu repair` for the new name and location.
 
 ## `tmsu-rm`
+
 fish
+
 Trash or delete a file, then run `tmsu repair` to remove it from the database.
 
 ## `translate-selected`
+
 fish, translate-shell, xclip, text-gui
+
 Translate the selected text, showing the result in a popup dialog.
 
 ## `trash-confirm`
+
 fish
+
 Ask the user to confirm trashing the specified file(s), then trash them.
 
 ## `v`
+
 fish
+
 View images or directories of images with [`nsxiv`](https://github.com/nsxiv/nsxiv). passes the rest of the images in the directory as well.
 
 ## `vol`
+
 fish
+
 Change system volume. This might be a bit more convenient and intuitive than typing crap like `amixer -c 2 set PCM +2%`.
 
 ## `xeph`
+
 fish
+
 Run a program in [Xephyr](https://wiki.archlinux.org/title/Xephyr), starting Xephyr if necessary.
 

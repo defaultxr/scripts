@@ -1,0 +1,82 @@
+#!/usr/bin/env fish
+# directory-difference - get a list of files that differ between directories
+# usage: directory-difference DIR-A DIR-B
+
+argparse -n directory-difference 'h/help' 'a/only-a' 'b/only-b' 'd/maxdepth=' -- $argv
+
+if test -n "$_flag_h"
+    echo "directory-difference - List the files that only occur in one of the two directories specified."
+    echo "Usage: directory-difference [arguments] directory-a directory-b"
+    echo
+    echo "  -h/--help - Print help and exit."
+    echo "  -a/--only-a - Print only the items in directory A that aren't in B."
+    echo "  -b/--only-b - Print only the items in directory B that aren't in A."
+    echo "  -d/--maxdepth - Set the maxdepth for the \"find\" command."
+    exit
+end
+
+set dir_a $argv[1]
+set dir_b $argv[2]
+
+set find_flags
+
+if test -n "$_flag_d"
+    set find_flags -maxdepth "$_flag_d"
+end
+
+function get_files -d "Get the list of files. If a directory is provided, get a list of the files in that directory. If a filename is provided, read the lines of that file and use them as the list of files."
+    if test -d $argv[1]
+        find $argv[1] $find_flags -exec basename {} \; | tail -n +2
+    else if test -f $argv[1]
+        xargs -a $argv[1] -d '\n' basename
+    else if string match '*:*' $argv[1]
+        string match -qr '(?<host>[^:]+):(?<directory>.+)' $argv[1]
+        ssh -o PermitLocalCommand=no -o ClearAllForwardings=yes $host "find $directory $find_flags -exec basename {} \\;" 2>/dev/null
+    end
+end
+
+set dir_a_files (get_files $dir_a)
+set dir_b_files (get_files $dir_b)
+
+if not test -n "$_flag_b"
+    for i in $dir_a_files
+        if not contains $i $dir_b_files
+            set -a only_in_a (readlink -f $dir_a/$i)
+        end
+    end
+end
+
+if not test -n "$_flag_a"
+    for i in $dir_b_files
+        if not contains $i $dir_a_files
+            set -a only_in_b (readlink -f $dir_b/$i)
+        end
+    end
+end
+
+if not test -n "$_flag_a"; and not test -n "$_flag_b"
+    set_color green
+    echo "Only in $dir_a:"
+    set_color normal
+    for i in $only_in_a
+        echo $i
+    end
+
+    set_color green
+    echo "Only in $dir_b:"
+    set_color normal
+    for i in $only_in_b
+        echo $i
+    end
+else
+    if test -n "$_flag_a"
+        for i in $only_in_a
+            echo $i
+        end
+    else if test -n "$_flag_b"
+        for i in $only_in_b
+            echo $i
+        end
+    end
+end
+

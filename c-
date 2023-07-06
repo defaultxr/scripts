@@ -1,0 +1,14 @@
+#!/usr/bin/env fish
+# c- - Alias for "c -"; copy standard input to the clipboard.
+
+argparse -n c- 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "c- - Alias for \"c -\"; copy standard input to the clipboard."
+    echo "Usage: c- [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+c -

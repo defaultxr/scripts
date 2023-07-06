@@ -1,0 +1,81 @@
+#!/usr/bin/env fish
+# convert-audio - Convert a set of audio files into a specified audio format.
+# Uses GNU Parallel to parallelize the jobs to convert as fast as possible, but
+# with the "nice" option set for minimum CPU priority, to minimize the effect on
+# other processes on the system.
+#
+# requirements: ffmpeg, parallel, trash-put (for --delete)
+
+argparse -n convert-audio 'h/help' 'v/verbose' 'f/format=' 'd/delete' 'p/print' -- $argv
+
+if set -q _flag_h
+    echo "convert-audio - Convert a set of audio files into a specified audio format."
+    echo "Usage: convert-audio [arguments] FILES"
+    echo
+    echo "  -h/--help    - Print help and exit."
+    echo "  -v/--verbose - Print debugging output to stderr."
+    echo "  -f/--format  - Set output audio format: can be opus (default), flac, or mp3."
+    echo "  -d/--delete  - \"Delete\" (trash) the source files after conversion."
+    # echo "  -c/--confirm - Confirm overwriting existing files (not implemented yet)." # FIX
+    # echo "  -o/--output  - Set the output filename format." # FIX?
+    echo "  -p/--print   - Print output filenames."
+    exit
+end
+
+set format 'opus'
+
+if set -q _flag_f
+    if contains "$_flag_f" 'opus' 'flac' 'mp3'
+        set format "$_flag_f"
+    else
+        echo "convert-audio: Unknown format: $_flag_f"
+        exit 1
+    end
+end
+
+if test "$format" = 'opus'
+    # 192k opus is approximately equivalent to V0 mp3 (but higher audio quality and smaller file size)
+    set -- command_line ffmpeg -i '{}' -b:a 192k -map_metadata 0 '{.}.opus'
+else if test "$format" = 'flac'
+    # compression_level goes from 0 to 12; 5 is default, 12 is max.
+    set -- command_line ffmpeg -i '{}' -compression_level 12 -map_metadata 0 '{.}.flac'
+else if test "$format" = 'mp3'
+    # q:a means variable bitrate; 0 means V0.
+    set -- command_line ffmpeg -i '{}' -q:a 0 -map_metadata 0 -id3v2_version 3 '{.}.mp3'
+end
+
+if set -q _flag_d
+    if not command -qs trash-put
+        echo "$(status filename): Could not find \"trash-put\" binary in \$PATH; --delete option won't work; exiting..."
+        exit 2
+    end
+    set -a -- command_line ';' trash-put '{}'
+end
+
+if set -q _flag_p
+    set -a -- command_line ';' echo '{}' # FIX: doesn't actually work
+end
+
+set log_location "/tmp/convert-audio-logs"
+
+set num_args (count $argv)
+
+if test $num_args -lt 1 # no args; we default to all audio files in the current directory
+    set files (lsa)
+    echo Converting: $files
+else
+    set files $argv
+end
+
+rm -rf "$log_location"
+mkdir -p "$log_location"
+
+if set -q _flag_v
+    echo -n "Converting to $format, saving logs to $log_location... " >&2
+end
+
+parallel --joblog "$log_location/parallel-log.txt" --results "$log_location" --nice 10 $command_line ::: $files
+
+if set -q _flag_v
+    echo "Done!" >&2
+end

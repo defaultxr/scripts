@@ -1,0 +1,19 @@
+#!/usr/bin/env fish
+# trash-confirm - Ask the user to confirm trashing the specified file(s), then trash them.
+
+set -- script "$(basename (status filename))"
+
+argparse -n "$script" 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script  - Ask the user to confirm trashing the specified file(s), then trash them."
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+if zenity --question --text="Really delete these files?
+$argv" --default-cancel
+    trash-put $argv
+end

@@ -1,0 +1,6 @@
+#!/usr/bin/env fish
+# lsv - list video files
+
+set color (if command -qs bfs; and [ -t 1 ]; echo "-color"; end)
+
+findv $color -maxdepth 1 $argv | sort -i

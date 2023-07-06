@@ -1,0 +1,6 @@
+#!/usr/bin/env fish
+# lsd - list directories
+
+set color (if command -qs bfs; and [ -t 1 ]; echo "-color"; end)
+
+findd $color -maxdepth 1 -not -iname '.*' $argv | sort -i

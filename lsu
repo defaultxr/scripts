@@ -1,0 +1,9 @@
+#!/usr/bin/env fish
+# lsu - list "unknown"; everything not audio, compressed, directories, images, or video.
+# see also: lsa, lsc, lsd, lsi, lsv, lsvis
+
+# FIX: not sure why this doesn't work:
+# ([ -t 1 ]; and echo -- "--color=always")
+# so instead i'm just doing --color=always for now
+
+findu -maxdepth 1 (if command -qs bfs; echo "-nocolor"; end) $argv | sort | xargs -d'\n' -- ls -d --color=always

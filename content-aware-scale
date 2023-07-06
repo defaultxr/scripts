@@ -1,0 +1,48 @@
+#!/usr/bin/env fish
+# content-aware scale a video.
+# https://www.imagemagick.org/Usage/resize/#liquid-rescale
+# requirements:
+# - fish (to actually run the script; bash isn't used because bash sux)
+# - ffmpeg (to convert the video to images and audio and back again)
+# - imagemagick (to process the images; actually apply the liquid-rescale)
+# - parallel (to run multiple imagemagick in parallel and make the processing happen faster)
+# - sox (to process the audio)
+# - tap-plugins (for the vibrato effect)
+
+set input $argv[1]
+set resize $argv[2] # FIX: strip off % and have a default if none is provided
+
+echo Input: $input
+echo This is a ... video? # FIX: make it work on images too
+echo Resize to: $resize
+
+set resize_back_to (math 100 / $resize '*' 100)
+
+# set tmp_dir (mktemp -d content-aware-scale-XXXX)
+
+set tmp_dir content-aware-scale-$input
+
+echo Using temporary directory $tmp_dir
+
+mkdir $tmp_dir
+
+ffmpeg -i $input "$tmp_dir/output_%06d.jpg"
+
+ffmpeg -i $input "$tmp_dir/$input.wav"
+
+cd $tmp_dir
+
+parallel --progress --joblog log.txt --nice 10 "convert {} -liquid-rescale $resize% -resize $resize_back_to% res_"$resize"_{}" ::: output_*.jpg
+
+# read -P "Finished rescaling video frames. Saved audio to $tmp_dir/$input.wav ; press enter to continue re-creating the video with the rescaled frames and this audio file."
+
+set vib_freq (random 2 6).(random 0 10000)
+
+echo "Vibrato frequency: $vib_freq"
+
+sox $input.wav vibrato-$input.wav norm ladspa -r tap_vibrato $vib_freq 20
+
+# FIX: this probably needs -r for the frame rate and -s for the size/dimensions
+ffmpeg -i vibrato-$input.wav -f image2 -i "res_"$resize"_output_%06d.jpg" -vcodec libx264 -crf 25 -pix_fmt yuv420p content-aware-$input
+
+echo "Done! Output saved to ./content-aware-$input . Temporary directory used: $tmp_dir ."

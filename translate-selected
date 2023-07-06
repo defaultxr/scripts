@@ -3,18 +3,23 @@
 # Requirements: translate-shell, xclip, text-gui (part of defaultxr/scripts)
 # See also: define-selected
 
-argparse -n translate-selected 'h/help' -- $argv
+argparse -n translate-selected 'h/help' 'f/full' -- $argv
 
 if test -n "$_flag_h"
     echo "translate-selected - translate the selected text, showing the result in a popup dialog."
     echo "Usage: translate-selected [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
+    echo "  -f/--full - Show additional information."
     exit
 end
 
+if not set -q _flag_f
+    set -- brief --brief
+end
+
 set title "selected text translation"
-set translation (xclip -o -selection primary | trans -no-ansi 2>/tmp/translate-selected-err.txt | string collect)
+set translation (xclip -o -selection primary | trans -no-ansi $brief 2>/tmp/translate-selected-err.txt | string collect)
 
 if test -z "$translation"
     set title "translation error"

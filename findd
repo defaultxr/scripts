@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# findd - Find directories.
+
+findtype directory $argv

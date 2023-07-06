@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# finda - Find audio files.
+
+findtype audio $argv

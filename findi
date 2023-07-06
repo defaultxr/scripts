@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# findi - Find image files.
+
+findtype image $argv

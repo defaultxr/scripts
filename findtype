@@ -1,0 +1,71 @@
+#!/usr/bin/env fish
+# findtype - Find files of a specified type.
+# Generally you can just use finda, findc, findd, etc, instead.
+
+argparse -n "findtype" --ignore-unknown 'h/help' 'd/dotfiles' -- $argv
+
+set type "$argv[1]"
+
+set script findtype
+switch "$type"
+    case 'a' 'audio'
+        set script finda
+        set type audio
+    case 'c' 'compressed' 'archive'
+        set script findc
+        set type compressed
+    case 'd' 'directory'
+        set script findd
+        set type directory
+    case 'i' 'image'
+        set script findi
+        set type image
+    case 'm' 'media'
+        set script findmedia
+        set type media
+    case 'u' 'unsorted'
+        echo "findtype does not support \"unsorted\"; just use findu instead."
+        exit 1
+        # set script findu
+        # set type unsorted
+    case 'v' 'video'
+        set script findv
+        set type video
+    case 'vis' 'visual'
+        set script findvis
+        set type visual
+    case '*'
+        echo "findtype does not support \"$type\"."
+        exit 1
+end
+
+set argv $argv[2..]
+
+if set -q _flag_h
+    echo -n "$script - Find "
+    if test "$type" = 'directory'
+        echo "directories."
+    else if test -z "$type"
+        echo "files of a specified type."
+    else
+        echo "$type files."
+    end
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help     - Print help and exit."
+    echo "  -d/--dotfiles - Also print files whose name starts with a period."
+    echo
+    echo "Any unknown arguments are passed to bfs or find."
+    exit
+end
+
+if not set -q _flag_d
+    set -- dotargs -not -iname '.*'
+end
+
+set find bfs
+if not command -qs bfs
+    set find find
+end
+
+command $find $argv $dotargs \( (filter --print=find "$type" ) \)

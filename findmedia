@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# findmedia - Find media files (audio, images, video).
+
+findtype media $argv

@@ -1,0 +1,29 @@
+#!/usr/bin/env fish
+# findu - Find unsorted files (anything not found by finda, findc, findd, etc.)
+# FIX: just make it possible to shell out to findtype in this one too.
+
+set -- script "$(basename (status filename))"
+
+argparse -n "$script" --ignore-unknown 'h/help' 'd/dotfiles' -- $argv
+
+if set -q _flag_h
+    echo "$script - Find unsorted files (anything not found by finda, findc, findd, etc.)"
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help     - Print help and exit."
+    echo "  -d/--dotfiles - Also print files whose name starts with a period."
+    echo
+    echo "Any unknown arguments are passed to bfs or find."
+    exit
+end
+
+if not set -q _flag_d
+    set -- dotargs -iname '.*' -or
+end
+
+set find bfs
+if not command -qs bfs
+    set find find
+end
+
+command $find $argv -not \( $dotargs (filter --print=find all) \)

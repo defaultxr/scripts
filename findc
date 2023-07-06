@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# findc - Find compressed files.
+
+findtype compressed $argv

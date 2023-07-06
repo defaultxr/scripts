@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# findv - Find video files.
+
+findtype video $argv

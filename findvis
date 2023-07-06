@@ -1,0 +1,4 @@
+#!/usr/bin/env fish
+# findvis - Find visual files (images, video).
+
+findtype visual $argv

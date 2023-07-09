@@ -45,6 +45,6 @@ else
     # import -window root $filename
 end
 
-if test -z "$_flag_C"
+if not set -q _flag_C
     echo -n $filename | c -i
 end

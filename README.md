@@ -2,7 +2,7 @@
 
 My personal collection of scripts.
 
-They range in complexity and usefulness; some of them are little more than aliases, while others contain a lot more logic and functionality. They should all support a `-h` or `--help` argument to display a summary and basic help information. Some of the scripts have configuration options at the top of the file that you may need or want to change. They're written in a variety of languages, but mostly [Fish](https://fishshell.com/) because Fish is great.
+They range in complexity and usefulness; some of them are little more than aliases, while others contain a lot more logic and functionality. They should all support a `-h` or `--help` argument to display a summary and basic help information. Some of the scripts have configuration options at the top of the file that you may need or want to change. They're written in a variety of languages, but mostly [Fish](https://fishshell.com/), because Fish is great.
 
 Even though I wrote them primarily for myself, all of these scripts should still be usable (and--hopefully--useful) to others. As long as you have the script's requirements, it should work just as well for you. Please don't hesitate to open an issue if you find any problems with them.
 
@@ -98,7 +98,7 @@ Content-aware scale a video. See [ImageMagick's documentation](https://www.image
 
 fish, ffmpeg
 
-Convert a set of audio files into a specified audio format. Uses GNU Parallel to parallelize the jobs to convert as fast as possible, `nice`ing the processes to run with a lower priority, to not disturb other processes on your system.
+Convert a set of audio files into a specified audio format, preserving tags. Uses GNU Parallel to parallelize the jobs to convert as fast as possible, `nice`ing the processes to run with a lower priority, to not disturb other processes on your system.
 
 ## `d`
 
@@ -396,7 +396,7 @@ Speak text using a text-to-speech engine.
 
 ## `sshot`
 
-fish, scrot, slop
+fish, scrot, slop, c
 
 Take a screenshot of the whole screen, a window, or a(n interactively-selected) region. unlike scrot it doesn't cause junk to show up near the edges of the screenshot.
 

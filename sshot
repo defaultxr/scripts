@@ -1,8 +1,8 @@
 #!/usr/bin/env fish
-# sshot - take a screenshot.
-# avoids the junk appearing in the screenshot when scrot is used in selection mode.
-# also automatically copies the path to the screenshot to the clipboard (pass -C to prevent this).
-# Requirements: scrot, slop ( https://github.com/naelstrof/slop )
+# sshot - Take a screenshot.
+# Avoids the junk appearing in the screenshot when scrot is used in selection mode.
+# Also automatically copies the path to the screenshot to the clipboard (pass -C to prevent this).
+# Requirements: scrot, slop ( https://github.com/naelstrof/slop ), c
 
 # usage:
 # sshot [-s] [-C]
@@ -36,10 +36,8 @@ if test -n "$_flag_s"
     slop -f "%g " | read G
     set GX (string split '+' $G | head -1 | string trim)
     set filename ~/(filedate)_$GX.png
-    # import -window root -crop $G $filename
     set sr (string split '+' $G | string split 'x')
     set sr (printf "%s,%s,%s,%s" $sr[3] (string trim "$sr[4]") $sr[1] $sr[2])
-    # echo sr: $sr
     scrot -a $sr $filename
 else
     set filename ~/(filedate)_full.png

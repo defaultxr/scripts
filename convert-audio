@@ -1,5 +1,5 @@
 #!/usr/bin/env fish
-# convert-audio - Convert a set of audio files into a specified audio format.
+# convert-audio - Convert a set of audio files into a specified audio format, preserving tags.
 # Uses GNU Parallel to parallelize the jobs to convert as fast as possible, but
 # with the "nice" option set for minimum CPU priority, to minimize the effect on
 # other processes on the system.

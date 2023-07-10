@@ -4,18 +4,29 @@
 
 set -- script "$(basename (status filename))"
 
-argparse -n "$script" 'h/help' -- $argv
+argparse -n "$script" 'h/help' 'f/fuzz=' -- $argv
 
 if set -q _flag_h
     echo "$script - Automatically trim blank edges of an image."
     echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
+    echo "  -f/--fuzz - Set \"fuzz\"; the distance that colors within are considered equal (default: 50%)."
     exit
+end
+
+if set -q _flag_f
+    set fuzz (string trim -c ' %' "$_flag_f")
+    if not test $fuzz -ge 0; or not test $fuzz -le 100
+        echo "$script: --fuzz must be a number within the range 0 to 100." >&2
+        exit 1
+    end
+else
+    set fuzz '50'
 end
 
 for file in $argv
     mkdir -p /tmp/autocrop/
     cp $file /tmp/autocrop/
-    convert $file -fuzz '50%' -trim $file
+    convert "$file" -fuzz "$fuzz%" -trim "$file"
 end

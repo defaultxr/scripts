@@ -6,7 +6,7 @@ set -- script "$(basename (status filename))"
 argparse -n "$script" 'h/help' 'f/format=' 'l/limit=' -- $argv
 
 if set -q _flag_h
-    echo "$script  - Merge and sort git log summaries for multiple repos."
+    echo "$script - Merge and sort git log summaries for multiple repos."
     echo "Usage: $script [arguments] repo-directories"
     echo
     echo "  -h/--help   - Print help and exit."

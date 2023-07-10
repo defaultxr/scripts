@@ -6,7 +6,7 @@ set -- script "$(basename (status filename))"
 argparse -n "$script" 'h/help' -- $argv
 
 if set -q _flag_h
-    echo "$script  - "Delete" (trash) a file, also removing it from any TMSU database."
+    echo "$script - \"Delete\" (trash) a file, also removing it from any TMSU database."
     echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."

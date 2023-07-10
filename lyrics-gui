@@ -8,7 +8,7 @@ argparse -n lyrics-gui 'h/help' -- $argv
 set -- script "$(basename (status filename))"
 
 if set -q _flag_h
-    echo "$script  - Open a window showing the lyrics of MPD's current track."
+    echo "$script - Open a window showing the lyrics of MPD's current track."
     echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."

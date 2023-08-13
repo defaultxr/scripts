@@ -2,11 +2,13 @@
 # ask the user a yes or no question and return true (0) if yes, false (1) otherwise.
 # FIX: implement default, etc
 
-argparse -n ask-yes-no --ignore-unknown 'h/help' 'p/prompt=' 'e/exact' 'd/default=' 'u/unrecognized=' 'i/sigint=' -- $argv
+set -- script "$(path basename (status filename))"
+
+argparse -n $script --ignore-unknown 'h/help' 'p/prompt=' 'e/exact' 'd/default=' 'u/unrecognized=' 'i/sigint=' -- $argv
 
 if set -q _flag_h
-    echo "ask-yes-no - ask the user a yes or no question and return true (0) if yes, false (1) otherwise."
-    echo "Usage: ask-yes-no [arguments] [prompt]"
+    echo "$script - ask the user a yes or no question and return true (0) if yes, false (1) otherwise."
+    echo "Usage: $script [arguments] [prompt]"
     echo
     echo "  -h/--help         - Print help and exit."
     echo "  -p/--prompt       - Explicitly set prompt."
@@ -15,13 +17,13 @@ if set -q _flag_h
     echo "  -u/--unrecognized - Exit with this value on an unrecognized input (defaults to 2). If the value is \"retry\", ask the user again."
     echo "  -i/--sigint       - Exit with this value on SIGINT/ctrl+c (defaults to 255)."
     echo
-    echo "Note: an unrecognized value for -d will cause ask-yes-no to exit immediately with a status of 255."
+    echo "Note: an unrecognized value for -d will cause $script to exit immediately with a status of 255."
     exit
 end
 
 set prompt "$_flag_p"
 if test -z "$prompt"
-    set prompt "$argv[1]"
+    set prompt (string trim "$argv[1]")
 end
 
 # "t" "1" "true" "y" "yes" "e" "enable" "enabled" "on"
@@ -35,7 +37,7 @@ if set -q _flag_d
     else if string match -qir '^[0-9]+$' "$_flag_d"
         set default "$_flag_d"
     else
-        echo "ask-yes-no: unrecognized default: $_flag_d"
+        echo "$script: unrecognized default: $_flag_d"
         exit 255
     end
 else
@@ -44,9 +46,9 @@ end
 
 if not set -q _flag_e
     if test "$default" = '0'
-        set prompt "$prompt(Y/n) "
+        set prompt "$prompt (Y/n) "
     else
-        set prompt "$prompt(y/N) "
+        set prompt "$prompt (y/N) "
     end
 end
 
@@ -70,7 +72,8 @@ else
     else
         if set -q _flag_u
             if test "$_flag_u" = 'retry'
-                ask-yes-no -e -p "$prompt" -d "$default" -u "$_flag_u"
+                set -l filename (status filename)
+                command $filename -e -p "$prompt" -d "$default" -u "$_flag_u"
                 exit $status
             else
                 exit $_flag_u

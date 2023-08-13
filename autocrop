@@ -2,6 +2,13 @@
 # autocrop - Automatically trim blank edges of an image.
 # Copies the original image to /tmp first in case you want to restore it later.
 
+# settings:
+
+# default fuzz percent
+set fuzz 30
+
+# code:
+
 set -- script "$(basename (status filename))"
 
 argparse -n "$script" 'h/help' 'f/fuzz=' -- $argv
@@ -11,7 +18,7 @@ if set -q _flag_h
     echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
-    echo "  -f/--fuzz - Set \"fuzz\"; the distance that colors within are considered equal (default: 50%)."
+    echo "  -f/--fuzz - Set \"fuzz\"; the distance that colors within are considered equal (default: $fuzz%)."
     exit
 end
 
@@ -21,8 +28,6 @@ if set -q _flag_f
         echo "$script: --fuzz must be a number within the range 0 to 100." >&2
         exit 1
     end
-else
-    set fuzz '50'
 end
 
 for file in $argv

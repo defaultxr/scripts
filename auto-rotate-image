@@ -1,25 +1,35 @@
 #!/usr/bin/env fish
-# automatically correct image rotation based on its metadata.
-# some software will write rotation information into an image incorrectly
-# which causes the image to show up wrong in other programs.
-# this script corrects that for each image provided as an argument.
-# it also outputs the filename of the result to stdout.
+# auto-rotate-image - Correct image rotation based on its metadata. Outputs the filename of the result.
+# Some software will write rotation information into an image incorrectly, which causes the image to show up wrong in certain programs. This script uses the rotation metadatum to write a rotated image sans that metadatum. The resulting image(s) are echoed to standard output.
+
+# settings:
+
+# The directory to save the resulting files in. When unset (as per the default), saves in /tmp/SCRIPT/ , where SCRIPT is the filename of this script.
+set result_dir
+
+# code:
+
+set -- script "$(path basename (status filename))"
 
 argparse -n auto-rotate-image 'h/help' -- $argv
 
-if test -n "$_flag_h"
-    echo "auto-rotate-image - automatically correct image rotation based on its metadata."
-    echo "Accepts the path to the image as an argument and outputs the filename of the result."
-    echo "Usage: auto-rotate-image IMAGE [IMAGE ...]"
+if test -z "$result_dir"
+    set result_dir "/tmp/$script"
+end
+
+if set -q _flag_h
+    echo "$script - Correct image rotation based on its metadata. Outputs the filename of the result."
+    echo "Usage: $script image [image ...]"
     echo
     echo "  -h/--help - Print help and exit."
     exit
 end
 
-mkdir -p /tmp/images-autorotated/
-for i in $argv
-    set file (basename $i)
-    set output "/tmp/images-autorotated/$file"
-    convert $i -auto-orient $output
-    echo $output
+mkdir -p "$result_dir"
+
+for file in $argv
+    set file (path basename "$file")
+    set output "$result_dir$file"
+    convert "$file" -auto-orient "$output"
+    echo "$output"
 end

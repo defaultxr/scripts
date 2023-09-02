@@ -6,11 +6,13 @@
 #
 # requirements: ffmpeg, parallel, trash-put (for --delete)
 
-argparse -n convert-audio 'h/help' 'v/verbose' 'f/format=' 'd/delete' 'p/print' -- $argv
+set -- script "$(path basename (status filename))"
+
+argparse -n "$script" 'h/help' 'v/verbose' 'f/format=' 'd/delete' 'p/print' -- $argv
 
 if set -q _flag_h
-    echo "convert-audio - Convert a set of audio files into a specified audio format."
-    echo "Usage: convert-audio [arguments] FILES"
+    echo "$script - Convert a set of audio files into a specified audio format, preserving tags."
+    echo "Usage: $script [arguments] FILES"
     echo
     echo "  -h/--help    - Print help and exit."
     echo "  -v/--verbose - Print debugging output to stderr."
@@ -22,15 +24,9 @@ if set -q _flag_h
     exit
 end
 
-set format 'opus'
-
+set format 'mp3' # opus seems to cut off the last second or so of audio sometimes :(
 if set -q _flag_f
-    if contains "$_flag_f" 'opus' 'flac' 'mp3'
-        set format "$_flag_f"
-    else
-        echo "convert-audio: Unknown format: $_flag_f"
-        exit 1
-    end
+    set format "$_flag_f"
 end
 
 if test "$format" = 'opus'
@@ -42,11 +38,14 @@ else if test "$format" = 'flac'
 else if test "$format" = 'mp3'
     # q:a means variable bitrate; 0 means V0.
     set -- command_line ffmpeg -i '{}' -q:a 0 -map_metadata 0 -id3v2_version 3 '{.}.mp3'
+else
+    echo "$script: Unsupported format \"$format\"." >&2
+    exit 1
 end
 
 if set -q _flag_d
     if not command -qs trash-put
-        echo "$(status filename): Could not find \"trash-put\" binary in \$PATH; --delete option won't work; exiting..."
+        echo "$script: Could not find \"trash-put\" binary in \$PATH; --delete option won't work; exiting..." >&2
         exit 2
     end
     set -a -- command_line ';' trash-put '{}'
@@ -56,13 +55,13 @@ if set -q _flag_p
     set -a -- command_line ';' echo '{}' # FIX: doesn't actually work
 end
 
-set log_location "/tmp/convert-audio-logs"
+set log_location "/tmp/$script-logs"
 
 set num_args (count $argv)
 
 if test $num_args -lt 1 # no args; we default to all audio files in the current directory
     set files (lsa)
-    echo Converting: $files
+    echo "$script: Converting: $files" >&2
 else
     set files $argv
 end
@@ -71,11 +70,11 @@ rm -rf "$log_location"
 mkdir -p "$log_location"
 
 if set -q _flag_v
-    echo -n "Converting to $format, saving logs to $log_location... " >&2
+    echo -n "$script: Converting to $format, saving logs to $log_location... " >&2
 end
 
 parallel --joblog "$log_location/parallel-log.txt" --results "$log_location" --nice 10 $command_line ::: $files
 
 if set -q _flag_v
-    echo "Done!" >&2
+    echo "$script: Done!" >&2
 end

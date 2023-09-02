@@ -1,42 +1,48 @@
 #!/usr/bin/env fish
-# a2v - "audio to video". generate a video from a sound file and an image.
-# useful for when you want to upload music to youtube or other video sharing sites.
-# note: (for now) the image file can't be a gif.
-# also note: if the image file size is big, generating the video will take longer.
+# a2v - "Audio to video". Create a video from an image and audio file.
+# Useful for when you want to upload music to YouTube or other video sharing sites.
+# Note: at the moment, the image file can't be a gif.
+# Also note: The larger the image file size, the longer it will take to generate the video.
 
-# usage:
+# Usage:
 #
 # a2v <IMAGE> <AUDIO> [OUTPUT]
-# or:
+# Or:
 # a2v <-i IMAGE> <-a AUDIO> [-o OUTPUT]
 
-# examples:
+# Examples:
 #
-# use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.mp4' in the current directory:
+# Use cover.jpg as the image and happybirthday.mp3 as the audio file. the output file will be 'happybirthday.mp4' in the current directory:
 # a2v cover.jpg happybirthday.mp3
 #
-# use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.ogv as the output filename:
+# Use cover.jpg as the image, happybirthday.mp3 as the audio file, and dmca.ogv as the output filename:
 # a2v cover.jpg happybirthday.mp3 dmca.ogv
 #
-# use blah.png as the image, foobar.mp3 as the audio, and nice.mp4 as the filename of the resulting video:
+# Use blah.png as the image, foobar.mp3 as the audio, and nice.mp4 as the filename of the resulting video:
 # a2v -i blah.png -a foobar.mp3 -o nice.mp4
 
 # code:
 
-if not command -qs ffmpeg
-    echo "error: ffmpeg not found in path."
-    exit 1
+# FIX: make the image file optional; if not provided, just create the video fully black.
+# FIX: handle gifs. this may be possible, or perhaps we create a temporary copy in png format.
+
+set -- script "$(path basename (status filename))"
+
+argparse -n $script 'i/image=' 'a/audio=' 'o/output=' 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script - Create a video from an image and audio file."
+    echo "Usage: $script [arguments] [-i] image [-a] audio [[-o] output]"
+    echo
+    echo "  -h/--help   - Show this help and exit."
+    echo "  -i/--image  - The image file to use as the video's visual component."
+    echo "  -a/--audio  - The audio file to use as the video's aural component."
+    echo "  -o/--output - The output filename. The video format is determined by the extension. If not specified, the output filename is the same as the audio file, but with its extension changed to mp4."
 end
 
-argparse -n a2v 'i/image=' 'a/audio=' 'o/output=' 'h/help' -- $argv
-
-if test -n "$_flag_h"
-    echo "a2v - convert an image and audio file to a video."
-    echo "usage: a2v [-i] IMAGE [-a] AUDIO [[-o] OUTPUT]"
-    echo
-    echo "example: a2v -i foo.jpg -a bar.mp3 -o blah.avi"
-    echo "example: a2v foo.jpg bar.mp3"
-    echo "in the second example, the output filename is automatically set to \"bar.mp4\"."
+if not command -qs ffmpeg
+    echo "$script: Error: ffmpeg not found in PATH." >&2
+    exit 2
 end
 
 set image "$_flag_i"
@@ -46,7 +52,11 @@ set output "$_flag_o"
 if test -z "$image"
     set image $argv[1]
     if test -z "$image"
-        echo "error: a2v requires an image argument (first argument or -i)."
+        echo "$script: Error: An image is required (first argument or -i)." >&2
+        exit 1
+    end
+    if not test -f "$image"
+        echo "$script: Source image '$image' not found." >&2
         exit 1
     end
     set argv $argv[2..]
@@ -55,7 +65,11 @@ end
 if test -z "$audio"
     set audio $argv[1]
     if test -z "$audio"
-        echo "error: a2v requires an audio argument (second argument or -a)."
+        echo "$script: Error: An audio file is required (second argument or -a)." >&2
+        exit 1
+    end
+    if not test -f "$audio"
+        echo "$script: Source audio '$audio' not found." >&2
         exit 1
     end
     set argv $argv[2..]
@@ -65,35 +79,23 @@ if test -z "$output"
     set output $argv[1]
     if test -z "$output"
         set output (string split -m 1 -r '.' "$audio")[1]".mp4"
-        echo "Assuming output filename '$output'."
+        echo "$script: Assuming output filename '$output'." >&2
     end
     set argv $argv[2..]
 end
 
-# echo image: $image
-# echo audio: $audio
-# echo output: $output
-
-if test ! -f $image
-    echo "Source image '$image' not found."
-    exit 1
+if not command -qs ffprobe
+    echo "$script: Error: ffprobe not found in PATH." >&2
+    exit 2
 end
-
-if test ! -f $audio
-    echo "Source audio '$audio' not found."
-    exit 1
-end
-
-# FIX: check if the image is a gif, and if so, create a temporary copy that is converted to png.
 
 set length (ffprobe -i "$audio" -show_entries format=duration -loglevel quiet -of csv="p=0")
 
 if test -f "$output"
-    read -P "Output file '$output' already exists. Overwrite? (y/N) " answer
-    if string match -i 'y*' "$answer"
-        echo "Overwriting '$output'."
+    if ask-yes-no --default=1 "Output file '$output' already exists. Overwrite?"
+        echo "$script: Overwriting '$output'." >&2
     else
-        echo "Operation canceled."
+        echo "$script: Operation canceled." >&2
         exit 1
     end
 end

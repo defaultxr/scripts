@@ -34,7 +34,7 @@ if set -q _flag_h
 end
 
 if set -q _flag_f
-    if contains "$_flag_f" 'wav' 'flac' 'opus'
+    if contains "$_flag_f" 'w64' 'wav' 'flac' 'opus'
         set format "$_flag_f"
     else
         echo -- "$(status filename): unknown format: \"$_flag_f\"."
@@ -52,7 +52,7 @@ if set -q _flag_s
 end
 
 if set -q _flag_c
-    if test -z "$_flag_c"
+    if not set -q _flag_c
         set copy 'y'
     else
         set copy "$_flag_c"
@@ -110,8 +110,13 @@ function start-recording
     end
     # nice -n -5 ionice -c 2 -n 0
     # --format "$format"
-    # XXX jack_capture doesn't seem to handle writing flac sometimes, for example when i start playing something in SuperCollider. so instead we record as wav and then convert to the requested format afterwards.
-    jack_capture --daemon $mic_args "$(make-filename wav)" &
+    # XXX jack_capture doesn't seem to handle writing flac sometimes (it seems to happen when i try to record SuperCollider, for example). so instead we record as w64 and then convert to the requested format afterwards.
+    if contains $format w64 wav
+        set arg_format $format
+    else
+        set arg_format w64
+    end
+    jack_capture --daemon $mic_args --format $arg_format "$(make-filename $arg_format)" &
     set action_taken 'started'
 end
 
@@ -119,6 +124,7 @@ function stop-recording
     if test (count $argv) -lt 1
         if set cstatus (capture-status)
             kill "$cstatus[1]"
+            set filename $cstatus[3]
         else
             echo "$(status filename): No recording is currently being made."
             exit 1
@@ -159,12 +165,11 @@ switch "$action"
 end
 
 if test "$action_taken" = 'ended'
-    if not test "$format" = 'wav'
-        set -l full_filename "$(make-filename wav)"
-        convert-audio --format="$format" --delete "$full_filename"
+    if not contains "$format" 'w64' 'wav'
+        convert-audio --format="$format" --delete "$filename" &>/tmp/capture-audio-convert.txt
     end
     if test 'y' = "$copy"
-        set -l result_filename "$(make-filename $format)"
+        set -l result_filename (path change-extension flac "$filename")
         echo -n -- "$result_filename" | fish_clipboard_copy
     end
 end

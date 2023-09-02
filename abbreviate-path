@@ -2,11 +2,13 @@
 # abbreviate-path - abbreviate the path passed as an argument.
 # see also: fish's built-in prompt_pwd function, which does similar.
 
-argparse -n abbreviate-path 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "abbreviate-path - abbreviate the path passed as an argument."
-    echo "Usage: abbreviate-path [arguments] PATH"
+argparse -n "$script" 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script - abbreviate the path passed as an argument."
+    echo "Usage: $script [arguments] PATH"
     echo
     echo "  -h/--help - Print help and exit."
     exit
@@ -18,4 +20,4 @@ else
     string replace -r "^$HOME" '~' $argv
 end | string replace -r '^https?:/+(www.)youtube.com/watch' 'yt:'
 
-true
+true # "string replace" returns false if no replacement was done; we return true instead.

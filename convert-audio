@@ -59,9 +59,9 @@ set log_location "/tmp/$script-logs"
 
 set num_args (count $argv)
 
-if test $num_args -lt 1 # no args; we default to all audio files in the current directory
-    set files (lsa)
-    echo "$script: Converting: $files" >&2
+if test $num_args -lt 1 # no args? user might be making a mistake, so we exit.
+    echo "$script: No files specified; exiting..."
+    exit 1
 else
     set files $argv
 end

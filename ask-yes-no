@@ -26,9 +26,6 @@ if test -z "$prompt"
     set prompt (string trim "$argv[1]")
 end
 
-# "t" "1" "true" "y" "yes" "e" "enable" "enabled" "on"
-# "nil" "0" "f" "false" "n" "no" "d" "disable" "disabled" "off"
-
 if set -q _flag_d
     if string match -qi 'y*' "$_flag_d"
         set default 0

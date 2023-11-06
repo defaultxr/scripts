@@ -14,7 +14,7 @@ if set -q _flag_h
     echo "  -p/--prompt       - Explicitly set prompt."
     echo "  -e/--exact        - Don't show the \"(Y/n)\" hint."
     echo "  -d/--default      - Set the default return value (i.e. if the user simply presses enter). Defaults to 1."
-    echo "  -u/--unrecognized - Exit with this value on an unrecognized input (defaults to 2). If the value is \"retry\", ask the user again."
+    echo "  -u/--unrecognized - Exit with this value on an unrecognized input (defaults to 2). If the value is \"retry\", ask the user again. If \"echo\", echo the input to stdout and exit with status 2."
     echo "  -i/--sigint       - Exit with this value on SIGINT/ctrl+c (defaults to 255)."
     echo
     echo "Note: an unrecognized value for -d will cause $script to exit immediately with a status of 255."
@@ -75,6 +75,9 @@ else
                 set -l filename (status filename)
                 command $filename -e -p "$prompt" -d "$default" -u "$_flag_u"
                 exit $status
+            else if test "$_flag_u" = 'echo'
+                echo $y_or_n
+                exit 2
             else
                 exit $_flag_u
             end

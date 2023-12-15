@@ -12,5 +12,5 @@ if set -q _flag_h
 end
 
 for file in $argv
-    cp "$file" "$file.bak"
+    cp -r "$file" "$(string trim --right --chars=/ $file).bak"
 end

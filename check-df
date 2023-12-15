@@ -9,7 +9,7 @@ set gb_free_warning 5 # warn if the amount of free GB is below this number
 
 # code:
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv
 

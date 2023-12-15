@@ -17,7 +17,7 @@ if test -n "$_flag_h"
     exit
 end
 
-set script (basename (status filename))
+set script (path basename (status filename))
 
 if test (count $argv) -eq 0; or test "$argv[1]" = '-'
     set files (cat)
@@ -31,7 +31,7 @@ if test $count -eq 0
     zenity --info --title="$script Error" "No files"
     exit 1
 else if test $count -eq 1
-    set title "Move $(basename $files[1]) To..."
+    set title "Move $(path basename $files[1]) To..."
 else
     set title "Move $count Files To..."
 end
@@ -47,7 +47,7 @@ end
 for i in $files
     set full (realpath $i)
     mv $full $destination
-    set basename (basename $i)
+    set basename (path basename $i)
     if command -q tmsu
         tmsu repair --manual $full "$destination/$basename" 2>/dev/null
     end

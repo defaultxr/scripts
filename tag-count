@@ -2,7 +2,7 @@
 # tag-count - Print all TMSU tags next to a count of their uses.
 # Tip: you can pipe to sort -n to sort by the count.
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv
 

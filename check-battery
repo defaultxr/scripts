@@ -8,7 +8,7 @@ set low_percent 20
 
 # code:
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv
 

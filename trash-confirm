@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # trash-confirm - Ask the user to confirm trashing the specified file(s), then trash them.
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # d - "Delete" (trash) a file, also removing it from any TMSU database.
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv
 

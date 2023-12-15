@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # myip - Get your current public IP address.
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv
 

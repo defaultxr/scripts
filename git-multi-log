@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # git-multi-log - Merge and sort git log summaries for multiple repos.
 
-set -- script "$(basename (status filename))"
+set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' 'f/format=' 'l/limit=' -- $argv
 

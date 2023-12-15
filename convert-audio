@@ -38,6 +38,8 @@ else if test "$format" = 'flac'
 else if test "$format" = 'mp3'
     # q:a means variable bitrate; 0 means V0.
     set -- command_line ffmpeg -i '{}' -q:a 0 -map_metadata 0 -id3v2_version 3 '{.}.mp3'
+else if test "$format" = 'wav'
+    set -- command_line ffmpeg -i '{}' '{.}.wav'
 else
     echo "$script: Unsupported format \"$format\"." >&2
     exit 1

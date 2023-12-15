@@ -1,0 +1,37 @@
+#!/usr/bin/env fish
+# grep-package-files - Run (rip)grep on all of the files (not directories) installed by a package.
+
+set -- script "$(path basename (status filename))"
+
+argparse -n $script --ignore-unknown 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script - Run (rip)grep on all of the files (not directories) installed by a package."
+    echo "Usage: $script [arguments] [query] [package]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+set query "$argv[1]"
+
+set package "$argv[2]"
+
+set len (math (string length "$package") + 2)
+
+set files
+
+# ignore directories
+for file in (pacman -Ql "$package" | string sub --start "$len")
+    if not string match --quiet '*/' "$file"
+        set -a files "$file"
+    end
+end
+
+if command -qs rg
+    set grep 'rg'
+else
+    set grep 'grep'
+end
+
+command $grep "$query" $files

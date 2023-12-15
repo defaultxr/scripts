@@ -358,11 +358,11 @@ fish
 
 Output a random file in the current directory. An argument can be provided to specify the number of subdirectories to look for a random file.
 
-## `rg-package-files`
+## `grep-package-files`
 
-fish, pacman, rg
+fish, pacman, rg/grep
 
-Run ripgrep on all of the files (not directories) installed by a package.
+Run (rip)grep on all of the files (not directories) installed by a package.
 
 ## `romanize`
 

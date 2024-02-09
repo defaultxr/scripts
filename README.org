@@ -315,6 +315,14 @@ Check disk free; print a message if free space of any partitions are below a thr
 
 Check current memory and swap usage and notify if it's low. May be useful to set as a cron job.
 
+** ~clipboard-filter~
+
+/fish, copyevent, xsel/
+
+Automatically apply edits when the clipboard is modified.
+
+By default, the only edits this makes are to remove YouTube's ~&pp=~ tracking parameters from URLs, but it should be pretty easy to add your own.
+
 ** ~grep-package-files~
 
 /fish, pacman, rg/

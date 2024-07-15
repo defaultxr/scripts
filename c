@@ -15,7 +15,7 @@ if set -q _flag_h
     echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help    - Print help and exit."
-    echo "  -p/--primary - Use primary selection instead of clipboard."
+    echo "  -p/--primary - Use primary selection (selected text) instead of clipboard."
     echo "  -/-i/--input - Send stdin to the clipboard."
     exit
 end

@@ -41,6 +41,10 @@
 # set volume to 40%:
 # vol 40
 
+# settings:
+
+set increment 4
+
 # code:
 
 function default_sink_name
@@ -81,9 +85,9 @@ if test (count $argv) -gt 0
         case toggle t
             mute toggle
         case + u up
-            volume '+3%'
+            volume "+$increment%"
         case - d down
-            volume '-3%'
+            volume "-$increment%"
         case reset r set s
             volume "$argv[2]"
         case '*%'

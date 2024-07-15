@@ -1,16 +1,17 @@
 #!/usr/bin/env fish
 # xeph - Run a program in Xephyr, starting it if necessary.
 
-argparse -n xeph 'h/help' 'k/kill' 'd/display=' 'n/no-wm' -- $argv
+argparse -n xeph 'h/help' 'k/kill' 'd/display=' 'n/no-wm' 'r/resolution=' -- $argv
 
 if set -q _flag_h
     echo "xeph - Run a program in Xephyr, starting it if necessary."
     echo "Usage: xeph [arguments] [program]"
     echo
-    echo "  -h/--help    - Print help and exit."
-    echo "  -k/--kill    - Kill the Xephyr process."
-    echo "  -d/--display - Set the Xephyr \$DSIPLAY number to open the window on (default: 5)."
-    echo "  -n/--no-wm   - Don't run a window manager; just run the specified program and quit Xephyr when it ends."
+    echo "  -h/--help       - Print help and exit."
+    echo "  -k/--kill       - Kill the Xephyr process."
+    echo "  -d/--display    - Set the Xephyr \$DSIPLAY number to open the window on (default: 5)."
+    echo "  -n/--no-wm      - Don't run a window manager; just run the specified program and quit Xephyr when it ends."
+    echo "  -r/--resolution - Set the resolution Xephyr should run at."
     exit
 end
 
@@ -25,9 +26,14 @@ else
     set display 5
 end
 
+if set -q _flag_r
+    set resolution "$_flag_r"
+else
+    set resolution (xrandr | string match --regex --groups-only 'primary (\\d+x\\d+)')
+end
 
 if not set -q _flag_n; and not pgrep Xephyr
-    Xephyr :$display -ac -screen 1920x1080 -no-host-grab &
+    Xephyr :$display -ac -screen $resolution -no-host-grab &
     sleep 1
     DISPLAY=:$display.0 fluxbox &>/dev/null &
     DISPLAY=:$display.0 xsetroot -cursor_name center_ptr &

@@ -5,7 +5,7 @@
 # settings:
 
 set percent_warning 100 # warn if percent used is above this number
-set gb_free_warning 5 # warn if the amount of free GB is below this number
+set gb_free_warning 10 # warn if the amount of free GB is below this number
 set ignored # list of mount points to ignore
 
 # code:

@@ -1,21 +1,45 @@
 #!/usr/bin/env fish
 # remove-unneeded-packages - Ask to remove all system packages installed as dependencies that are no longer needed.
 
-argparse -n remove-unneeded-packages 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
+
+argparse -n $script 'h/help' 'l/list' -- $argv
 
 if set -q _flag_h
-    echo "remove-unneeded-packages - ask to remove all system packages installed as dependencies that are no longer needed."
-    echo "Usage: remove-unneeded-packages [arguments]"
+    echo "$script - ask to remove all system packages installed as dependencies that are no longer needed."
+    echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
+    echo "  -l/--list - List unneeded packages and exit."
     exit
 end
 
 set distro "$(grep '^ID=' /etc/os-release | string sub --start 4)"
 
-if contains "$distro" 'arch' 'archarm' # arch linux
-    sudo pacman -Rs (sudo pacman -Qdt | string match --all --regex --groups-only '^(\\S+)\\s+\\S+')
+function unneeded-packages -d "Get a list of unneeded packages."
+    if contains "$distro" 'arch' 'archarm'
+        sudo pacman -Qdt | string match --all --regex --groups-only '^(\\S+)\\s+\\S+'
+    else
+        warn -t $script -l 'error' "Don't know how to get a list of unneeded packages for distro \"$distro\"."
+        exit 1
+    end
+end
+
+if set -q _flag_l
+    unneeded-packages
+    exit
+end
+
+if contains "$distro" 'arch' 'archarm'
+    set packages (unneeded-packages)
+    if test (count $packages) = 0
+        echo "$script: No unneeded packages." >&2
+        exit
+    end
+    sudo pacman -Rs $packages
+else if contains "$distro" 'debian'
+    sudo apt autoremove
 else
-    echo "Unknown distro: \"$distro\""
+    echo "$script: Error: Unsupported distro: \"$distro\"" >&2
     exit 1
 end

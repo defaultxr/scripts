@@ -6,28 +6,35 @@
 
 set percent_warning 100 # warn if percent used is above this number
 set gb_free_warning 5 # warn if the amount of free GB is below this number
+set ignored # list of mount points to ignore
 
 # code:
 
 set -- script "$(path basename (status filename))"
 
-argparse -n "$script" 'h/help' -- $argv
+argparse -n "$script" 'h/help' 'L/non-local' -- $argv
 
 if set -q _flag_h
     echo "$script - Check drive free; print a message if free space of any partitions are below a threshold."
     echo "Usage: $script [arguments]"
     echo
-    echo "  -h/--help - Print help and exit."
+    echo "  -h/--help      - Print help and exit."
+    echo "  -L/--non-local - Also check non-local filesystems."
     exit
 end
 
-set res (df -l -BG -x tmpfs -x devtmpfs -x squashfs --output=avail,pcent,target 2>/dev/null | tail -n +2)
+if not set -q _flag_L
+    set -- nonlocal -l
+end
 
-for i in $res
-    set split (string match -r '^\s*(?<avail>\S+)\s+(?<percent>\S+)\s+(?<target>\S+)' $i)
+for filesystem in (df $nonlocal -BG -x efivarfs -x tmpfs -x devtmpfs -x squashfs -x iso9660 --output=avail,pcent,target 2>/dev/null | tail -n +2)
+    set split (string match -r '^\s*(?<avail>\S+)\s+(?<percent>\S+)\s+(?<target>\S+)' $filesystem)
     set avail_num (string replace -r '([A-Za-z]+)$' '' $avail)
     set percent (string replace -a '%' '' $percent)
-    if string match -qr '^/(boot|efi|run/zram.-mount)$' $target
+    if string match --quiet --regex '^/(boot|efi|run/zram.*)$' $target
+        continue
+    end
+    if contains $target $ignored
         continue
     end
     if test $percent -gt $percent_warning; or test $avail_num -lt $gb_free_warning

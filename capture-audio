@@ -35,6 +35,8 @@ if set -q _flag_h
     exit
 end
 
+set jack_capture_formats w64 wav
+
 if set -q _flag_f
     if contains "$_flag_f" 'w64' 'wav' 'flac' 'opus'
         set format "$_flag_f"
@@ -77,11 +79,21 @@ else
     end
 end
 
-function capture-status -d "If audio is currently being captured, echoes the pid, elapsed time, and the filename being written to. Otherwise, returns false."
-    if ps -C jack_capture -o pid,etime,args --no-headers | string match -qr '^\\s*(?<pid>\\S+)\\s+(?<etime>\\S+)\\s+.+\\s+(?<open_file>\\S+)$'
+set recording_filename
+set result_filename
+
+function parse-filename -d "Parse a recording filename into its component parts."
+    string match --regex -- '^(?<basename>.+)-(?<target_format>.+?)\\.(?<recording_format>[^.]+)$' $recording_filename | tail -3
+end
+
+function capture-status -d "If audio is currently being captured, echoes the pid, elapsed time, the filename being written to, and the result filename. Otherwise, echoes nothing and returns false."
+    if ps -C jack_capture -o pid,etime,args --no-headers | string match --quiet --regex '^\\s*(?<pid>\\S+)\\s+(?<etime>\\S+)\\s+.+\\s+(?<recording_filename>\\S+)$'
+        set components (parse-filename $recording_filename)
+        set result_filename "$components[1].$components[2]"
         echo "$pid"
         echo "$etime"
-        echo "$open_file"
+        echo "$recording_filename"
+        echo "$result_filename"
         true
     else
         false
@@ -90,10 +102,11 @@ end
 
 function echo-status -d "Echo the status in a human-readable way."
     if test (count $argv) -gt 0
-        echo "Status:   Recording."
-        echo "PID:      $cstatus[1]"
-        echo "Time:     $cstatus[2]"
-        echo "Filename: $cstatus[3]"
+        echo "Status:    Recording."
+        echo "PID:       $cstatus[1]"
+        echo "Time:      $cstatus[2]"
+        echo "Recording: $cstatus[3]"
+        echo "Result:    $cstatus[4]"
     else
         echo "Status: Stopped."
     end
@@ -101,6 +114,10 @@ end
 
 function make-filename -d "Echo the full path to the recording."
     set -l format $argv[1]
+    set -l target_format $argv[2]
+    if not test -z "$target_format"
+        set filename "$filename-$target_format"
+    end
     echo -- "$directory$filename.$format"
 end
 
@@ -118,7 +135,7 @@ function start-recording
     else
         set arg_format w64
     end
-    jack_capture --daemon $mic_args --format $arg_format "$(make-filename $arg_format)" &
+    jack_capture --daemon $mic_args --format $arg_format (make-filename $arg_format $format) &
     set action_taken 'started'
 end
 
@@ -126,7 +143,7 @@ function stop-recording
     if test (count $argv) -lt 1
         if set cstatus (capture-status)
             kill "$cstatus[1]"
-            set filename $cstatus[3]
+            set recording_filename $cstatus[3]
         else
             echo "script: No recording is currently being made."
             exit 1
@@ -167,11 +184,18 @@ switch "$action"
 end
 
 if test "$action_taken" = 'ended'
-    if not contains "$format" 'w64' 'wav'
-        convert-audio --format="$format" --delete "$filename" &>/tmp/capture-audio-convert.txt
+    set components (parse-filename $recording_filename)
+    set result_filename "$components[1].$components[2]"
+    echo "filename: $filename"
+    echo "recording_filename: $recording_filename"
+    echo "copy: $copy"
+    echo "jack_capture_formats: $jack_capture_formats"
+    echo "result_filename: $result_filename"
+    if not contains "$format" $jack_capture_formats
+        convert-audio --format="$format" --delete (path change-extension $jack_capture_formats[1] $recording_filename)
     end
+    mv (path change-extension $format $recording_filename) $result_filename
     if test 'y' = "$copy"
-        set -l result_filename (path change-extension flac "$filename")
-        echo -n -- "$result_filename" | fish_clipboard_copy
+        echo -n -- $result_filename | c -
     end
 end

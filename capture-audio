@@ -19,11 +19,13 @@ set format 'flac'
 
 # code:
 
-argparse -n capture-audio 'h/help' 'a/action=' 's/source=' 'c/copy=?' 'f/format=' -- $argv
+set -- script "$(path basename (status filename))"
+
+argparse -n $script 'h/help' 'a/action=' 's/source=' 'c/copy=?' 'f/format=' -- $argv
 
 if set -q _flag_h
-    echo "capture-audio - Capture the audio output going to the speakers and record it to a file."
-    echo "Usage: capture-audio [arguments] [action]"
+    echo "$script - Capture the audio output going to the speakers and record it to a file."
+    echo "Usage: $script [arguments] [action]"
     echo
     echo "  -h/--help   - Print help and exit."
     echo "  -a/--action - Specify the action to perform; can be one of: toggle (default), record, stop, status, return."
@@ -37,14 +39,14 @@ if set -q _flag_f
     if contains "$_flag_f" 'w64' 'wav' 'flac' 'opus'
         set format "$_flag_f"
     else
-        echo -- "$(status filename): unknown format: \"$_flag_f\"."
+        echo -- "$script: unknown format: \"$_flag_f\"."
         exit 4
     end
 end
 
 if set -q _flag_s
     if not contains "$_flag_s" 'output' 'mic'
-        echo "$(status filename): No such source known: $_flag_s"
+        echo "$script: No such source known: $_flag_s"
         exit 2
     else
         set source "$_flag_s"
@@ -126,7 +128,7 @@ function stop-recording
             kill "$cstatus[1]"
             set filename $cstatus[3]
         else
-            echo "$(status filename): No recording is currently being made."
+            echo "script: No recording is currently being made."
             exit 1
         end
     else
@@ -160,7 +162,7 @@ switch "$action"
             exit 1
         end
     case '*'
-        echo "$(status filename): Unknown action: $action"
+        echo "$script: Unknown action: $action"
         exit 3
 end
 

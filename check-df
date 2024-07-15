@@ -12,13 +12,14 @@ set ignored # list of mount points to ignore
 
 set -- script "$(path basename (status filename))"
 
-argparse -n "$script" 'h/help' 'L/non-local' -- $argv
+argparse -n "$script" 'h/help' 'n/notify' 'L/non-local' -- $argv
 
 if set -q _flag_h
     echo "$script - Check drive free; print a message if free space of any partitions are below a threshold."
     echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help      - Print help and exit."
+    echo "  -n/--notify    - Show a notification instead of printing (useful if you want to run this script as a cron job)."
     echo "  -L/--non-local - Also check non-local filesystems."
     exit
 end
@@ -26,6 +27,8 @@ end
 if not set -q _flag_L
     set -- nonlocal -l
 end
+
+set warnings
 
 for filesystem in (df $nonlocal -BG -x efivarfs -x tmpfs -x devtmpfs -x squashfs -x iso9660 --output=avail,pcent,target 2>/dev/null | tail -n +2)
     set split (string match -r '^\s*(?<avail>\S+)\s+(?<percent>\S+)\s+(?<target>\S+)' $filesystem)
@@ -38,6 +41,16 @@ for filesystem in (df $nonlocal -BG -x efivarfs -x tmpfs -x devtmpfs -x squashfs
         continue
     end
     if test $percent -gt $percent_warning; or test $avail_num -lt $gb_free_warning
-        printf "%s currently has ~%s disk free (%s%% used)!\n" $target $avail $percent
+        set -a warnings (printf '%s has ~%s free (%s%% used)!' $target $avail $percent)
     end
+end
+
+if test (count $warnings) = '0'
+    exit
+end
+
+if set -q _flag_n
+    notification --name=check-df --urgency=critical 'check-df' "$(printf '%s\n' $warnings)"
+else
+    printf '%s\n' $warnings
 end

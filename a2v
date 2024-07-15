@@ -92,7 +92,7 @@ end
 set length (ffprobe -i "$audio" -show_entries format=duration -loglevel quiet -of csv="p=0")
 
 if test -f "$output"
-    if ask-yes-no --default=1 "Output file '$output' already exists. Overwrite?"
+    if ask-yes-no --default=1 "Output file '$output' already exists; overwrite?"
         echo "$script: Overwriting '$output'." >&2
     else
         echo "$script: Operation canceled." >&2
@@ -103,4 +103,4 @@ end
 # -c:v libx264 -crf 20 -preset slow -vf format=yuv420p -c:a aac -movflags +faststart output.mp4
 
 # ffmpeg -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length "$output"
-nice -n 10 ffmpeg -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length -c:v libx264 -crf 20 -preset slow -vf format=yuv420p -c:a aac -movflags +faststart "$output"
+nice -n 10 ffmpeg -y -i "$audio" -loop 1 -i "$image" -r 1 -shortest -t $length -c:v libx264 -crf 20 -preset slow -vf format=yuv420p -c:a aac -movflags +faststart "$output"

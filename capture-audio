@@ -28,7 +28,7 @@ if set -q _flag_h
     echo "Usage: $script [arguments] [action]"
     echo
     echo "  -h/--help   - Print help and exit."
-    echo "  -a/--action - Specify the action to perform; can be one of: toggle (default), record, stop, status, return."
+    echo "  -a/--action - Specify the action to perform; can be one of: toggle (default), start, go, stop, status, return."
     echo "  -s/--source - Specify the audio source; can be one of: output (default), mic."
     echo "  -c/--copy   - Whether to copy the filename of the output to the clipboard when stopping recording (default: $copy)."
     echo "  -f/--format - Specify the output file format (default: $format)."

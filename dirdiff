@@ -4,75 +4,77 @@
 
 set -- script "$(path basename (status filename))"
 
-argparse -n "$script" 'h/help' 'a/only-a' 'b/only-b' 'd/maxdepth=' -- $argv
+argparse -n "$script" 'h/help' 'a/only-a' 'b/only-b' 'B/both' 'd/maxdepth=' 'ignore=+' -- $argv
 
 if set -q _flag_h
     echo "$script - List files that only exist in one of the two specified dirs."
     echo "Usage: $script [arguments] directory-a directory-b"
     echo
-    echo "  -h/--help - Print help and exit."
-    echo "  -a/--only-a - Print only the items in directory A that aren't in B."
-    echo "  -b/--only-b - Print only the items in directory B that aren't in A."
+    echo "  -h/--help     - Print help and exit."
+    echo "  -a/--only-a   - Print only the items in directory A that aren't in B."
+    echo "  -b/--only-b   - Print only the items in directory B that aren't in A."
+    echo "  -B/--both     - Print only the items that appear in both directories."
     echo "  -d/--maxdepth - Set the maximum directory depth to recurse into. Equivalent to find's -maxdepth argument."
+    echo "  -i/--ignore   - Specify files to ignore (this argument can be provided multiple times)."
     exit
 end
 
 set dir_a $argv[1]
 set dir_b $argv[2]
 
-set find_flags 
+set find_flags
 
 if set -q _flag_d
     set -a find_flags -maxdepth "$_flag_d"
 end
 
-function get_files -d "Get the list of files. If a directory is provided, get a list of the files in that directory. If a filename is provided, read the lines of that file and use them as the list of files."
-    if test -d $argv[1]
-        find $argv[1] $find_flags -exec basename {} \; | tail -n +2
-    else if test -f $argv[1]
-        xargs -a $argv[1] -d '\n' basename
-    else if string match '*:*' $argv[1]
-        string match -qr '(?<host>[^:]+):(?<directory>.+)' $argv[1]
+if set -q _flag_i
+    set ignore $_flag_i
+end
+
+function note -d "Echo a note to stderr."
+    warn -t $script -l info $argv[1]
+end
+
+function get-files -d "Get the list of files. If a directory is provided, get a list of the files in that directory. If a filename is provided, read the lines of that file and use them as the list of files."
+    set -l input (path resolve $argv[1])
+    if test -d $input
+        set -l -- not_args -not \( (for ig in $ignore; printf '-name\n%s\n' $ig; end) \)
+        find $input $find_flags -not -wholename $input -not -path "*/.git/*" -not -name '.git' (if test (count $not_args) -gt 3; printf '%s\n' %not_args; end) | string replace --regex '^'(string escape --style=regex "$input" | string trim --chars '/' --right)'/' ''
+    else if test -f $input
+        xargs -a $input -d '\n' basename
+    else if string match '*:*' $input
+        string match -qr '(?<host>[^:]+):(?<directory>.+)' $input
         ssh -o PermitLocalCommand=no -o ClearAllForwardings=yes $host "find $directory $find_flags -exec basename {} \\;" 2>/dev/null
     end
 end
 
-set dir_a_files (get_files $dir_a)
-set dir_b_files (get_files $dir_b)
+set dir_a_files (get-files $dir_a)
+set dir_b_files (get-files $dir_b)
 
-if not set -q _flag_b
+if set -q _flag_B
+    note "In both directories:"
+    for i in $dir_a_files
+        if contains $i $dir_b_files
+            echo $i
+        end
+    end
+end
+
+if set -q _flag_a
+    note "Only in $dir_a:"
     for i in $dir_a_files
         if not contains $i $dir_b_files
-            set -a only_in_a (path resolve $dir_a/$i)
+            echo $i
         end
     end
 end
 
-if not set -q _flag_a
+if set -q _flag_b
+    note "Only in $dir_b:"
     for i in $dir_b_files
         if not contains $i $dir_a_files
-            set -a only_in_b (path resolve $dir_b/$i)
-        end
-    end
-end
-
-if not set -q _flag_a; and not set -q _flag_b
-    set_color green
-    echo "Only in $dir_a:" >&2
-    set_color normal
-    if not set -q _flag_b
-        for i in $only_in_a
-            echo $i
-        end
-    end
-
-    set_color green
-    echo "Only in $dir_b:" >&2
-    set_color normal
-    if not set -q _flag_a
-        for i in $only_in_b
             echo $i
         end
     end
 end
-

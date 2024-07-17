@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 # check-memory-usage - Check current memory and swap usage and notify if it's low.
-# May be useful to set as a cron job.
+# May be useful as a cron job.
 
 # settings:
 
@@ -10,7 +10,7 @@ set threshold 0.85 # notify when memory and swap usage are both above this perce
 
 argparse -n check-memory-usage 'h/help' 'f/force' 's/stdout' -- $argv
 
-if test -n "$_flag_h"
+if set -q _flag_h
     echo "check-memory-usage - Check current memory and swap usage and warn when low."
     echo "Usage: check-memory-usage [arguments]"
     echo
@@ -33,14 +33,16 @@ function get_top_for -d "Get the name of the top process for the specified resou
     top -b -n 1 -o $argv[1] | head -8 | tail -n -1 | string split ' ' | tail -n -1
 end
 
-if test -n "$_flag_f"; or test $mem_pct -gt $threshold; and test $swap_pct -gt $threshold
+if set -q _flag_f; or test $mem_pct -gt $threshold; and test $swap_pct -gt $threshold
     set -l IFS
     set output (printf 'RAM: %.f%%; top: %s\nSwap: %.f%%; top: %s' (math $mem_pct '*' 100) (get_top_for '%MEM') (math $swap_pct '*' 100) (get_top_for SWAP))
-    if test -n "$_flag_s"
+    if set -q _flag_s
         echo $output
     else
-        set -x DBUS_SESSION_BUS_ADDRESS 'unix:path=/run/user/1000/bus'
-        set -x DISPLAY :0.0
+        set -x DBUS_SESSION_BUS_ADDRESS "unix:path=/run/user/$(id --user)/bus"
+        if not set -q DISPLAY
+            set -x DISPLAY :0.0
+        end
         notify-send 'Memory usage warning' $output
     end
 end

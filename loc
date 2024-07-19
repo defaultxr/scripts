@@ -2,14 +2,22 @@
 # loc - Locate files by name. Basically a shortcut for a case-insensitive filename search.
 # requirements: bfs or find.
 
-argparse -n loc 'h/help' '1/1-dir' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "loc - Locate files by name. Basically a shortcut for a case-insensitive filename search."
-    echo "Usage: loc [arguments] [search terms]"
+if set index (contains --index -- -- $argv)
+    set terms $argv[$index..]
+    set argv $argv[..(math $index - 1)]
+end
+
+argparse -n $script --ignore-unknown 'h/help' 'd/dir=' '1/1-dir' -- $argv
+
+if set -q _flag_h
+    echo "$script - Locate files by name. Basically a shortcut for a case-insensitive filename search."
+    echo "Usage: $script [arguments] [search terms]"
     echo
     echo "  -h/--help  - Print help and exit."
-    echo "  -1/--1-dir - Only search in the current directory (don't recurse into subdirectories)."
+    echo "  -d/--dir   - Specify the directory to search in (default: current)."
+    echo "  -1/--1-dir - Only search in one directory (don't recurse into subdirectories)."
     exit
 end
 
@@ -17,8 +25,20 @@ if not command -qs bfs
     alias bfs 'find'
 end
 
+if test -z "$_flag_d"
+    set dir '.'
+else
+    set dir "$_flag_d"
+end
+
 if set -q _flag_1
     set -- one_dir -maxdepth 1
 end
 
-bfs . $one_dir -iname '*'(string join '*' $argv)'*'
+if not set -q terms
+    set terms $argv
+else
+    set extra_args $argv
+end
+
+bfs $dir $extra_args $one_dir -iname '*'(string join '*' $terms)'*'

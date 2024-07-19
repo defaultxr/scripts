@@ -1,10 +1,14 @@
 #!/usr/bin/env fish
 # check-battery - Check the battery and notify if it's low.
-# May be useful to set as a cron job.
+# May be useful as a cron job.
 
 # settings:
 
-set low_percent 20
+# Show a notification when any devices have less than this percent battery remaining.
+set low_percent 25
+
+# Play a sound if the battery is getting too low.
+set sound
 
 # code:
 
@@ -21,10 +25,21 @@ if set -q _flag_h
 end
 
 set -x DBUS_SESSION_BUS_ADDRESS "unix:path=/run/user/$(id --user)/bus"
-set -x DISPLAY :0.0
+if not set -q DISPLAY
+    set -x DISPLAY :0.0
+end
 
-set -l percent (acpi | string match -r '([0-9]+)%,?' | tail -1)
+set acpi (acpi)
 
-if test $percent -lt $low_percent
-    notify-send -u critical -h string:x-dunst-stack-tag:check-battery "Battery low" "Currently at $percent%."
+for battery in $acpi
+    echo "$battery" | string match --quiet --regex '^Battery (?<id>[0-9]+): (?<state>[^,]+), (?<percent>[0-9]+)%,'
+    if contains "$state" 'Full' 'Charging'; or test $percent = 0
+        continue
+    end
+    if test $percent -lt $low_percent
+        notify-send -u critical -h string:x-dunst-stack-tag:check-battery "Battery $id low" "$state ($percent%)."
+        if test -n "$sound"
+            mpv $sound &
+        end
+    end
 end

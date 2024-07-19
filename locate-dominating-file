@@ -1,31 +1,33 @@
 #!/usr/bin/env fish
-# locate-dominating-file - look up in the directory hierarchy for a specified file.
-# this can be used, for example, to check if we're in a git repository, by locating ".git".
-# returns 1 if the target was not found, or 0 on success.
-# with the -s or --silent argument, don't print anything to stdout.
-# inspired by the emacs function of the same name.
+# locate-dominating-file - Search upwards in the directory hierarchy for the specified file.
+# This can be used, for example, to check if we're in a git repository, by locating ".git".
+# Returns 1 if the target was not found, or 0 on success.
+# With the -s or --silent argument, don't print anything to stdout.
+# Inspired by the Emacs function of the same name.
 
-argparse -n locate-dominating-file 's/silent' 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "locate-dominating-file - look up in the directory hierarchy for a specified file."
-    echo "Usage: locate-dominating-file [arguments] [filename]"
+argparse -n $script 'h/help' 's/silent' -- $argv
+
+if set -q _flag_h
+    echo "$script - Search upwards in the directory hierarchy for the specified file."
+    echo "Usage: $script [arguments] [filename]"
     echo
     echo "  -h/--help   - Print help and exit."
     echo "  -s/--silent - Don't print anything to stdout."
     exit
 end
 
-set file $argv[1]
+set filename $argv[1]
 
 while true
-    if test -e $file
-        if test -z "$_flag_s"
+    if test -e "$filename"
+        if not set -q _flag_s
             echo -n (pwd)
             if not string match -q '*/' (pwd)
                 echo -n '/'
             end
-            echo $file
+            echo "$filename"
         end
         exit 0
     end

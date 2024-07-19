@@ -1,12 +1,4 @@
 #!/usr/bin/env fish
 # lsvis - list visual files (images, video)
 
-set color (if command -qs bfs; and [ -t 1 ]; echo "-color"; end)
-
-# these additional commands are needed so that colors are preserved but so 'sort' doesn't sort by them.
-# from https://stackoverflow.com/questions/29399752/bash-sort-command-not-sorting-colored-output-correctly
-
-findvis -maxdepth 1 $color $argv |
-sed 'h;s/\x1b[[0-9;]*m//g;G;s/\n/\t/' | # insert the sort key
-sort |                  # sort the result
-cut -f2-                # remove the sort key
+ls -1 $argv | filter visual

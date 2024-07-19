@@ -1,6 +1,4 @@
 #!/usr/bin/env fish
 # lsc - list compressed files
 
-set color (if command -qs bfs; and [ -t 1 ]; echo "-color"; end)
-
-findc $color -maxdepth 1 $argv | sort -i
+ls -1 $argv | filter compressed

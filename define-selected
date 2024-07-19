@@ -3,11 +3,13 @@
 # Requirements: dictd, xclip, text-gui (part of defaultxr/scripts)
 # See also: translate-selected
 
-argparse -n define-selected --ignore-unknown 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "define-selected - Define the specified or selected word, showing the result in a popup dialog."
-    echo "Usage: define-selected [arguments] [word]"
+argparse -n "$script" --ignore-unknown 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script - Define the specified or selected word, showing the result in a popup dialog."
+    echo "Usage: $script [arguments] [word]"
     echo
     echo "  -h/--help - Print help and exit."
     exit
@@ -20,11 +22,11 @@ else
 end
 
 set title "\"$word\" definition"
-set definition "$(dict "$word" 2>/tmp/define-selected-err.txt | tail -n +5 | string collect)"
+set definition "$(dict "$word" 2>/tmp/$script-err.txt | tail -n +5 | string collect)"
 
 if test -z "$definition"
     set title "Error"
-    set definition "$(cat /tmp/define-selected-err.txt)"
+    set definition "$(cat /tmp/$script-err.txt)"
 end
 
 if command -qs text-gui

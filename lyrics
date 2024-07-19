@@ -1,39 +1,58 @@
 #!/usr/bin/env fish
 # lyrics - Get the lyrics for the specified or currently-playing song.
-# requirements: clyrics, ffprobe (ffmpeg)
+# requirements: clyrics, kid3-cli (kid3)
+# TODO:
+# - look into beets' lyrics plugin/subcommand
 
-argparse -n lyrics 'h/help' 'f/file=' 'n/no-fetch' -- $argv
+set -- filename "$(status filename)"
+set -- script "$(path basename "$filename")"
+
+argparse -n $script 'h/help' 'f/file=' 'n/no-fetch' 'o/notify-on-fetch' -- $argv
 
 if set -q _flag_h
-    echo "lyrics - Get the lyrics for the specified or currently-playing song."
-    echo "Usage: lyrics [arguments] [song]"
+    echo "$script - Get the lyrics for the specified or currently-playing song."
+    echo "Usage: $script [arguments] [song]"
     echo
-    echo "  -h/--help     - Print help and exit."
-    echo "  -f/--file     - Specify the file."
-    echo "  -n/--no-fetch - Don't attempt to fetch lyrics from the internet; only extract them from the file's lyrics tag. If no lyrics could be found in the tag, exits with a status of 1."
+    echo "  -h/--help            - Print help and exit."
+    echo "  -f/--file            - Specify the file."
+    echo "  -n/--no-fetch        - Don't attempt to fetch lyrics from the internet; only extract them from the file's lyrics tag. If no lyrics could be found in the tag, exit with a status of 1."
+    echo "  -o/--notify-on-fetch - Show a notification when fetching the lyrics from online."
     exit
 end
 
-if test (count $argv) -gt '0'
+function fetch-lyrics -d "Attempt to find the specified lyrics online."
+    if set -q _flag_n
+        exit 1
+    end
+    if set -q _flag_o
+        notify-send "lyrics" "Looking up lyrics for $argv..."
+    end
     clyrics $argv
+end
+
+if test (count $argv) = '1'; and test -e "$argv[1]"
+    command "$filename" --file="$argv[1]"
     exit
+end
+
+if not test (count $argv) = '0'
+    fetch-lyrics
 else
     if set -q _flag_f
         set filename "$_flag_f"
     else
-        set filename (m file)
+        set filename "$(m file)"
     end
     # FIX: this should also check for all lyrics tags, not just english.
-    set -- title_artist_maybe_lyrics "$(ffprobe -v quiet -loglevel panic -show_entries format_tags=title,artist,lyrics-eng -of default=nokey=1:noprint_wrappers=1 "$filename")"
+    # set -- title_artist_maybe_lyrics "$(ffprobe -v quiet -loglevel panic -show_entries format_tags=title,artist,lyrics-eng -of default=nokey=1:noprint_wrappers=1 "$filename")"
+
+    set -- title_artist_maybe_lyrics "$(kid3-cli -c select "$filename" -c 'get Artist' -c 'get Title' -c 'get Lyrics')"
     set -- title "$(echo $title_artist_maybe_lyrics | head -1)"
     set -- artist "$(echo $title_artist_maybe_lyrics | head -2 | tail -1)"
     set -- maybe_lyrics "$(echo $title_artist_maybe_lyrics | tail -n +3)"
-    if not test -z "$maybe_lyrics"
-        printf '%s\n' "$maybe_lyrics"
+    if test -n "$maybe_lyrics"
+        printf '%s' "$maybe_lyrics"
         exit
     end
-    if set -q _flag_n
-        exit 1
-    end
-    clyrics "$artist" "$title"
+    fetch-lyrics "$artist" "$title"
 end

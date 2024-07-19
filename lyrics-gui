@@ -1,20 +1,66 @@
 #!/usr/bin/env fish
 # lyrics-gui - Open a window showing the lyrics of MPD's current track.
+# requirements: lyrics, m, kid3-cli (kid3) (optional), text-gui
 
 # code:
 
 set -- script "$(path basename (status filename))"
 
-argparse -n "$script" 'h/help' -- $argv
+argparse -n "$script" 'h/help' 'f/file=' 'e/editor=?' -- $argv
 
 if set -q _flag_h
     echo "$script - Open a window showing the lyrics of MPD's current track."
     echo "Usage: $script [arguments]"
     echo
-    echo "  -h/--help - Print help and exit."
+    echo "  -h/--help   - Print help and exit."
+    echo "  -f/--file   - Specify the file whose lyrics should be edited (defaults to the currently-playing track in mpd)."
+    echo "  -e/--editor - Open the lyrics in an editor instead of the GUI (defaults to \$EDITOR ($EDITOR))."
     exit
 end
 
-set filename (m file)
+if test (count $argv) -gt '1'
+    echo "$script: Unknown arguments: $argv" >&2
+    echo "$script: Note that only one filename can be provided per invocation." >&2
+end
 
-lyrics | text-gui -T "Lyrics for "(mpc | head -1) --action "Control-s=set-lyrics-tag --file=\"$(string escape \"$filename\")\""
+if set -q _flag_f
+    set filename (path resolve "$_flag_f")
+else if test (count $argv) = '1'
+    set filename $argv[1]
+else
+    set filename (m file)
+end
+
+if command -qs kid3-cli
+    set artist_title (kid3-cli -c select "$filename" -c 'get Artist' -c 'get Title')
+else
+    set artist_title "" ""
+end
+
+set artist "$artist_title[1]"
+set title "$artist_title[2]"
+
+set lyrics "$(lyrics --file "$filename")"
+
+function sanitize -d "Replace special characters with dashes."
+    string replace --all --regex '[^a-zA-Z0-9-]' '-' "$argv[1]"
+end
+
+set temp_file (mktemp '/tmp/lyrics-'(sanitize "$artist")'_-_'(sanitize "$title")'-XXXXX')
+
+if set -q _flag_e
+    set -l editor "$_flag_e"
+    if test -z "$editor"
+        set editor "$EDITOR"
+    end
+    echo "$lyrics" >"$temp_file"
+    command "$editor" "$temp_file"
+    if not test "$lyrics" = "$(cat "$temp_file")"
+        cat "$temp_file" | set-lyrics-tag --file="$filename"
+    end
+    rm "$temp_file"
+else
+    echo "$lyrics" >"$temp_file"
+    echo "$lyrics" | text-gui -T "Lyrics for $artist - $title" --action "Control-s=set-lyrics-tag --file=$(string escape "$filename")" --action "Alt-e=e $(string escape "$temp_file")"
+    rm "$temp_file"
+end

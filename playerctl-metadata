@@ -1,0 +1,66 @@
+#!/usr/bin/env fish
+# playerctl-metadata - Pretty-print MPRIS metadata from playerctl.
+
+set -- script "$(path basename (status filename))"
+
+argparse -n "$script" 'h/help' 'p/player=' -- $argv
+
+if set -q _flag_h
+    echo "$script - Pretty-print MPRIS metadata from playerctl."
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -p/--player - Specify the player or players to get metadata from."
+    exit
+end
+
+function format_microseconds -d "Convert a number of microseconds into a pretty time string."
+    set t_seconds (math $argv[1] / 1000000)
+    set min (math floor $t_seconds / 60)
+    set sec (math floor $t_seconds % 60)
+    printf '%d:%02d' $min $sec
+end
+
+function format_status -d "Echo the transport status as a symbol."
+    switch "$argv[1]"
+        case "Playing"
+            echo "▶"
+        case "Paused"
+            echo "■"
+        case '*'
+            echo "?"
+    end
+end
+
+if set -q _flag_p
+    set -- p_arg "--player=$_flag_p"
+end
+
+set out (playerctl $p_arg --format="{{artist}}
+{{title}}
+{{status}}
+{{playerName}}
+{{xesam:album}}
+{{position}}
+{{mpris:length}}" metadata)
+
+set artist "$out[1]"
+set title "$out[2]"
+set player_status "$out[3]"
+set player "$out[4]"
+
+if not test -z "$out[5]"
+    set album "$out[5] - "
+end
+
+set c_time (format_microseconds "$out[6]")
+set t_time (format_microseconds "$out[7]")
+
+if not test -z "$artist"
+    set artist_title "$artist - $title"
+else
+    set artist_title "$title"
+end
+
+echo $artist_title
+echo (format_status "$player_status") - "$player" - $album $c_time/$t_time

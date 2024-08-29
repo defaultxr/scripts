@@ -401,7 +401,7 @@ Automatically trim blank edges of an image. Copies the original image to ~/tmp~ 
 
 ** ~capture-audio~ ⚡
 
-/fish, jack_capture, convert-audio/
+/fish, jack_capture, convert-audio, c/
 
 Capture the audio output going to the speakers and record it to a file.
 

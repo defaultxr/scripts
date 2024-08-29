@@ -1,5 +1,6 @@
 #!/usr/bin/env fish
 # capture-audio - Capture the audio output going to the speakers and record it to a file.
+# requirements: jack_capture, convert-audio, c
 # FIX: not done yet:
 # - better output when starting/stopping
 

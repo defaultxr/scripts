@@ -5,39 +5,45 @@
 
 # settings:
 
-set log_location "/tmp/convert-to-opus-logs"
+# The directory to save log files in. When unset (as is the default), saves in /tmp/SCRIPT/ , where SCRIPT is the filename of this script.
+set log_dir
 
 # code:
 
-argparse -n a2v-multi 'h/help' 'v/verbose' -- $argv
+set -- script "$(path basename (status filename))"
+
+argparse -n "$script" 'h/help' 'v/verbose' -- $argv
 
 if set -q _flag_h
-    echo "a2v-multi - Run a2v on multiple audio files."
-    echo "Usage: a2v-multi [arguments] [image] [audio files]"
+    echo "$script - Run a2v on multiple audio files in parallel."
+    echo "Usage: $script [arguments] [image] [audio files]"
     echo
     echo "  -h/--help    - Print help and exit."
     echo "  -v/--verbose - Print extra information."
     exit
 end
 
+if test -z "$log_dir"
+    set log_dir "/tmp/$script"
+end
+
 set image "$argv[1]"
 
 set audio_files $argv[2..]
 
-set num_audio_files (count $audio_files)
-
-rm -rf "$log_location"
-mkdir -p "$log_location"
+rm -rf "$log_dir"
+mkdir -p "$log_dir"
 
 if set -q _flag_v
-    echo "Image: $image."
-    echo "Audio files ($num_audio_files): $audio_files"
-    echo "Log file location: $log_location"
-    echo "Converting..."
+    echo "$script: Converting audio to video:" >&2
+    echo "Image: $image"
+    echo "Audio files ($(count $audio_files)): $audio_files"
+    echo "Log file location: $log_dir"
+    echo "Converting..." >&2
 end
 
-parallel --progress --color --joblog "$log_location/log.txt" --results "$log_location" --nice 10 a2v -i "$image" -a {} ::: $audio_files
+parallel --progress --color --joblog "$log_dir/log.txt" --results "$log_dir" --nice 10 a2v -i "$image" -a {} ::: $audio_files
 
 if set -q _flag_v
-    echo "Done!"
+    echo "Done!" >&2
 end

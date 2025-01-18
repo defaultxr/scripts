@@ -441,6 +441,12 @@ Get a list of N random songs from your music directory.
 
 View images or directories of images with [[https://github.com/nsxiv/nsxiv][~nsxiv~]]. passes the rest of the images in the directory as well.
 
+** ~v-~
+
+/fish, nsxiv/
+
+Alias for ~v -~; open an image viewer for the files passed via stdin.
+
 * guis
 
 ** ~lyrics-gui~ ⚡

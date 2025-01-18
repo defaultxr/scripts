@@ -1,7 +1,7 @@
 #!/usr/bin/env fish
 # set-title - Set the terminal window title.
 
-argparse -n set-title 'h/help' -- $argv
+argparse -n set-title --ignore-unknown 'h/help' -- $argv
 
 if set -q _flag_h
     echo "set-title - Set the terminal window title."

@@ -13,8 +13,18 @@ if set -q _flag_h
     exit
 end
 
-if command -q tmsu
-    tmsu repair -R -p $argv 2>/dev/null
-end
+# commented this because it might delete tags inadvertently
+# if command -q tmsu
+#     tmsu repair -R -p $argv 2>/dev/null
+# end
 
-trash-put $argv
+set os (uname)
+
+if test "$os" = 'Linux'
+    trash-put $argv
+else if test "$os" = 'Darwin'
+    trash $argv
+else
+    echo "$script: Error: Unsupported OS: $os" >&2
+    exit 1
+end

@@ -6,40 +6,51 @@
 #
 # requirements: ffmpeg, parallel, trash-put (for --delete)
 
+# settings:
+
+# default format:
+set format 'mp3' # opus seems to cut off the last second or so of audio sometimes :(
+
+# code:
+
 set -- script "$(path basename (status filename))"
 
-argparse -n "$script" 'h/help' 'v/verbose' 'f/format=' 'd/delete' 'p/print' -- $argv
+argparse -n "$script" 'h/help' 'v/verbose' 'f/format=' 'd/delete' 'o/output=' 'O/overwrite' 'p/print' -- $argv
 
 if set -q _flag_h
     echo "$script - Convert a set of audio files into a specified audio format, preserving tags."
     echo "Usage: $script [arguments] FILES"
     echo
-    echo "  -h/--help    - Print help and exit."
-    echo "  -v/--verbose - Print debugging output to stderr."
-    echo "  -f/--format  - Set output audio format: can be opus (default), flac, or mp3."
-    echo "  -d/--delete  - \"Delete\" (trash) the source files after conversion."
-    # echo "  -c/--confirm - Confirm overwriting existing files (not implemented yet)." # FIX
-    # echo "  -o/--output  - Set the output filename format." # FIX?
-    echo "  -p/--print   - Print output filenames."
+    echo "  -h/--help      - Print help and exit."
+    echo "  -v/--verbose   - Print debugging output to stderr."
+    echo "  -f/--format    - Set output audio format: can be opus, flac, mp3, or wav (default: $format)."
+    echo "  -d/--delete    - \"Delete\" (trash) the source files after conversion."
+    echo "  -o/--output    - Specify output directory."
+    echo "  -O/--overwrite - Overwrite existing files."
     exit
 end
 
-set format 'mp3' # opus seems to cut off the last second or so of audio sometimes :(
 if set -q _flag_f
     set format "$_flag_f"
 end
 
+if set -q _flag_overwrite
+    set -- overwrite_arg -y
+else
+    set -- overwrite_arg -n
+end
+
 if test "$format" = 'opus'
     # 192k opus is approximately equivalent to V0 mp3 (but higher audio quality and smaller file size)
-    set -- command_line ffmpeg -i '{}' -b:a 192k -map_metadata 0 '{.}.opus'
+    set -- command_line ffmpeg $overwrite_arg -i '{1}' -b:a 192k -map_metadata 0 "{2}/{1/.}.opus"
 else if test "$format" = 'flac'
     # compression_level goes from 0 to 12; 5 is default, 12 is max.
-    set -- command_line ffmpeg -i '{}' -compression_level 12 -map_metadata 0 '{.}.flac'
+    set -- command_line ffmpeg $overwrite_arg -i '{1}' -compression_level 12 -map_metadata 0 "{2}/{1/.}.flac"
 else if test "$format" = 'mp3'
     # q:a means variable bitrate; 0 means V0.
-    set -- command_line ffmpeg -i '{}' -q:a 0 -map_metadata 0 -id3v2_version 3 '{.}.mp3'
+    set -- command_line ffmpeg $overwrite_arg -i '{1}' -q:a 0 -map_metadata 0 -id3v2_version 3 "{2}/{1/.}.mp3"
 else if test "$format" = 'wav'
-    set -- command_line ffmpeg -i '{}' '{.}.wav'
+    set -- command_line ffmpeg $overwrite_arg -i '{1}' "{2}/{1/.}.wav"
 else
     echo "$script: Unsupported format \"$format\"." >&2
     exit 1
@@ -50,11 +61,11 @@ if set -q _flag_d
         echo "$script: Could not find \"trash-put\" binary in \$PATH; --delete option won't work; exiting..." >&2
         exit 2
     end
-    set -a -- command_line ';' trash-put '{}'
+    set -a -- command_line ';' trash-put '{1}'
 end
 
 if set -q _flag_p
-    set -a -- command_line ';' echo '{}' # FIX: doesn't actually work
+    set -a -- command_line ';' echo '{1}' # FIX: doesn't actually work
 end
 
 set log_location "/tmp/$script-logs"
@@ -68,6 +79,14 @@ else
     set files $argv
 end
 
+if set -q _flag_o
+    set output "$_flag_o"
+else
+    set output (path dirname "$files[1]")
+end
+
+set output (string trim --right --chars='/' "$output")
+
 rm -rf "$log_location"
 mkdir -p "$log_location"
 
@@ -75,7 +94,7 @@ if set -q _flag_v
     echo -n "$script: Converting to $format, saving logs to $log_location... " >&2
 end
 
-parallel --joblog "$log_location/parallel-log.txt" --results "$log_location" --nice 10 $command_line ::: $files
+parallel --joblog "$log_location/parallel-log.txt" --results "$log_location" --nice 10 --link $command_line ::: $files ::: $output
 
 if set -q _flag_v
     echo "$script: Done!" >&2

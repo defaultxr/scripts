@@ -16,8 +16,14 @@
 # whether to print extra debugging output to stdout.
 debug_output = False
 
+# minimum size of the window (or None if no minimum size should be enforced)
+min_size = [500, 120]
+
+# max size of the window (or None if size should not be limited)
+max_size = [1000, 120]
+
 # whether or not to show a notification when saving tags about the tags saved.
-show_notification = False
+show_notification = True
 
 # when saving tags, if show_notification is on, which tags should we mention about saving? should be an array of one or more of: 'added', 'removed', or 'new'.
 notify_about = ['added', 'removed', 'new']
@@ -362,13 +368,27 @@ def comma(ignored):
   tagsinput.event_generate('<space>')
   return "break"
 
-def ctrl_backspace(ignored):
-  """Delete the word to the left of the cursor."""
+def delete_word(direction=1):
+  """Delete characters up to the next space in the specified direction."""
   pos = get_cursor_pos()
   txt = get_input_text(tagsinput)
-  next_space = txt.rfind(' ', 0, pos)+1
-  set_input_text(tagsinput, txt[:next_space] + txt[pos:])
-  set_cursor_pos(next_space)
+  if direction < 0:
+    prev_space = txt.rfind(' ', 0, pos)+1
+    set_input_text(tagsinput, txt[:prev_space] + txt[pos:])
+    set_cursor_pos(prev_space)
+  else:
+    next_space = txt.find(' ', pos)+1
+    set_input_text(tagsinput, txt[:pos] + txt[next_space:])
+    set_cursor_pos(pos)
+
+def ctrl_backspace(ignored):
+  """Delete the word to the left of the cursor."""
+  delete_word(-1)
+  return "break"
+
+def ctrl_delete(ignored):
+  """Delete the word to the right of the cursor."""
+  delete_word(1)
   return "break"
 
 def copy_widget_text_to_clipboard(widget):
@@ -385,6 +405,8 @@ def make_gui():
   prev_cursor_loc = 0
 
   root = Tk(className="tag-gui")
+
+  root.tk.call('tk', 'scaling', 1.5) # FIX: make configurable (via an env var maybe?)
 
   mainframe = ttk.Frame(root)
   mainframe.pack(fill=BOTH, expand=True)
@@ -413,7 +435,7 @@ def make_gui():
   tagsinput.bind('<comma>', comma)
   tagsinput.tag_configure('nonexistent', foreground='red')
 
-  listbox = Listbox(mainframe, selectmode=SINGLE)
+  listbox = Listbox(mainframe, selectmode=SINGLE, font=tkFont.Font(size=9))
   listbox.pack(fill=BOTH, expand=True)
 
   root.bind('<Return>', ret)
@@ -425,19 +447,22 @@ def make_gui():
   root.bind('<Control-p>', lambda e: move_selection(-1))
   root.bind('<Control-n>', lambda e: move_selection(1))
   root.bind('<Control-BackSpace>', ctrl_backspace)
+  root.bind('<Control-Delete>', ctrl_delete)
   root.bind('<Alt-b>', backward_word)
   root.bind('<Alt-f>', forward_word)
 
   tagsinput.focus()
-  root.minsize(500, 120)
-  root.maxsize(800, 120)
+  if min_size:
+    root.minsize(*min_size)
+  if max_size:
+    root.maxsize(*max_size)
 
 # main
 
 if __name__ == '__main__':
   global root, files, alltags, tags
   if len(sys.argv) == 2 and (sys.argv[1] == '--help' or sys.argv[1] == '-h'):
-    print("tag-gui - A simple GUI to edit TMSU tags of one or more files.")
+    print("tag-gui - Edit the TMSU tags for the specified file(s) with a tab-completing gui.")
     print("Usage: tag-gui [arguments] [files]")
     print()
     print("  -h/--help   - Print help and exit.")
@@ -456,9 +481,9 @@ if __name__ == '__main__':
     exit(1)
   cddir = tmsu_dir(files[0])
   if cddir == None:
-    err = "Can't tag this file (%s) as it does not appear to be within a TMSU directory." % files[0]
+    err = "Can't tag; file is not within a TMSU directory: %s" % files[0]
     print(err)
-    messagebox.showerror("TMSU error", err)
+    osd_notify(err, "TMSU error")
     exit(1)
   else:
     os.chdir(cddir)

@@ -1,0 +1,37 @@
+#!/usr/bin/env fish
+# tmsu-tag-count - Print all TMSU tags next to a count of their uses.
+
+# FIX: can we just query the db directly? Maybe one of these:
+# select tag_id, count(*) from file_tag group by tag_id order by count(*);
+# SELECT t.id, t.name, count(file_id) FROM file_tag ft, tag t WHERE ft.tag_id = t.id GROUP BY t.id ORDER BY t.name
+
+set -- script "$(path basename (status filename))"
+
+argparse -n "$script" 'h/help' 's/sort' 'D/database=' -- $argv
+
+if set -q _flag_h
+    echo "$script - Print all TMSU tags next to a count of their uses."
+    echo "Usage: $script [arguments]"
+    echo
+    echo "  -h/--help     - Print help and exit."
+    echo "  -s/--sort     - Sort by count."
+    echo "  -D/--database - Specify the TMSU database to count tags from."
+    exit
+end
+
+if set -q _flag_D
+    set -- db_flags -D "$_flag_D"
+end
+
+set res
+
+for tag in (tmsu $db_flags tags -1)
+    set count (tmsu $db_flags files "$tag" 2>/dev/null | count)
+    set -a res (printf '%-5s %s\n' $count "$tag")
+end
+
+if set -q _flag_s
+    printf '%s\n' $res | sort -n
+else
+    printf '%s\n' $res
+end

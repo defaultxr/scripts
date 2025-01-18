@@ -283,17 +283,17 @@ Move a file, then run ~tmsu repair~ for the new name and location.
 
 Trash or delete a file, then run ~tmsu repair~ to remove it from the database.
 
+** ~tmsu-tag-count~
+
+/fish, tmsu/
+
+Print all TMSU tags next to a count of their uses.
+
 ** ~trash-confirm~
 
 /fish, trash-put (trash-cli)/
 
 Ask the user to confirm trashing the specified file(s), then trash them.
-
-** ~tag-count~
-
-/fish, tmsu/
-
-Print all TMSU tags next to a count of their uses.
 
 * system
 

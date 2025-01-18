@@ -1,18 +1,26 @@
 #!/usr/bin/env fish
-# pgr - grep for processes that match the arguments.
-# basically like pgrep but its output is meant to be readable by humans.
+# pgr - Grep for processes that match the arguments.
+# Similar to pgrep but its output is meant to be readable by humans.
 
-# ps aux | grep -v (status -f) | grep --color -i "$argv"
+set -- script "$(path basename (status filename))"
 
-argparse -n pgr 'h/help' -- $argv
+argparse -n $script 'h/help' 'f/full' -- $argv
 
-if test -n "$_flag_h"
-    echo "pgr - grep for processes that match the arguments."
-    echo "Usage: pgr [arguments]"
+if set -q _flag_h
+    echo "$script - Grep for processes that match the arguments."
+    echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
+    echo "  -f/--full - Match against any parameter of the process rather than just the command."
     exit
 end
 
-# this disgusting regexp is to only match against the command line, not against user or other columns:
-ps aux | grep -v (status -f) | string match -er "\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+.*$argv" | grep --color -i "$argv"
+if set -q _flag_f
+    set regex "$argv"
+else
+    # This disgusting regexp is to only match against the command line and not other columns.
+    set regex "^\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+\\S+\\s+.*$argv"
+end
+
+# FIX: i guess because string match --regex and grep use different regexp styles, querying with some special regex syntaxes prevents results from being shown. for example "pgr 'm af(ter)? '"
+ps aux | grep -v (status -f) | string match --entire --regex "$regex" | grep --color -i "$argv"

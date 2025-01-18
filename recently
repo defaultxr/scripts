@@ -1,5 +1,18 @@
 #!/usr/bin/env fish
-# recently - get a list of recently-modified files in this directory and subdirectories, most recent first
+# recently - Recursively list the contents of this directory in modification order, most recent first.
+
+set -- script "$(path basename (status filename))"
+
+argparse -n "$script" 'h/help' 'e/exclude=+' -- $argv
+
+if set -q _flag_h
+    echo "$script - Recursively list the contents of this directory in modification order, most recent first."
+    echo "Usage: $script [find-arguments]"
+    echo
+    echo "  -h/--help    - Print help and exit."
+    echo "  -e/--exclude - Exclude a directory."
+    exit
+end
 
 if command -qs bfs
     set find bfs
@@ -10,6 +23,26 @@ else
     set extra_args ""
 end
 
+if set -q _flag_e
+    set -l path_flag
+    for path in $_flag_e
+        set path (string replace (pwd) '.' (path resolve "$path"))
+        if string match --quiet '/*' "$path"
+            echo "$script: --exclude must specify a directory within the current ($(pwd))." >&2
+            exit 1
+        end
+        if not string match --quiet './*' "$path"
+            set path "./$path"
+        end
+        set path (string trim -c '/*' "$path")'/*'
+        set -a -- path_flag -path "$path" -or
+    end
+    set -- exclude_args -not \( $path_flag[..-2] -prune \)
+end
+
 # %T@ = file's last modification time in seconds since Jan 1 1970, with fractional part
 # %p = file's name.
-command $find . $argv $extra_args -type f -printf '%T@ %p\n' | sort -k 1 -n | sed 's/^[^ ]* //' | tac
+command $find . $exclude_args $argv $extra_args -type f -printf '%T@ %p\n' |
+sort -k 1 -n |
+string match --regex --groups-only '^\\S+\\s+(.+)$' |
+tac

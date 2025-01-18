@@ -21,6 +21,8 @@ else
     set word "$(xclip -o -selection primary)"
 end
 
+set notification_id (notify-send --print-id --urgency=low --expire-time=10000 "$script" "Looking up \"$word\"...")
+
 set title "\"$word\" definition"
 set definition "$(dict "$word" 2>/tmp/$script-err.txt | tail -n +5 | string collect)"
 
@@ -28,6 +30,8 @@ if test -z "$definition"
     set title "Error"
     set definition "$(cat /tmp/$script-err.txt)"
 end
+
+notify-send --replace-id="$notification_id" --urgency=low --expire-time=1 "Found definition."
 
 if command -qs text-gui
     text-gui -T "$title" --text="$definition"

@@ -1,53 +1,76 @@
 #!/usr/bin/env raku
-# filter - filter a list of filenames, outputting only those whose extension denotes a specified "type".
+# filter - Filter a list of filenames, outputting only those whose extension denotes a specified "type".
 
-# usage:
-# filter [--print=FORMAT] <type>
+# Usage:
 #
-# type can be: text, audio, image, video, visual (images and video), media (images, audio, and video), or directory.
-# type can also be abbreviated to the first letter.
+# filter [--print=FORMAT] [--invert] <type>
 #
-# if --print is provided, just print the list of extensions that would be used rather than filtering.
-# the format of --print output can be set to "find", "space", or "newline" (the default)
+# TYPE can be abbreviated when unambiguous. Use --print=types to get a list of supported types.
+#
+# If --print is provided, just print the list of extensions that would be used rather than filtering.
+# --print's output format can be one of: find, space, newline (the default), or types (newline-separated list of supported types).
+# --print=find will print the extensions as arguments for the "find" command.
 
-# examples:
+# Examples:
 
-# list all the video files in ~/media:
+# List all the video files in ~/media:
 # find ~/media | filter v
 
-# list every audio file in your home directory:
-# find ~/ | filter a
+# List every image and video file in your home directory:
+# find ~/ | filter visual
 
-# code:
+# List files whose file extensions are not recognized by filter:
+# find ~/ | filter --invert supported
+
+# Code:
 
 our %types := { # initial definition should have fundamental types only, not compound types like "visual" or "media".
-    text => qw/ txt text md org /,
+    text => qw/ txt text log md org /,
+    config => qw/ csv xml json ini yaml yml conf cnf service /,
+    script => qw/ sh bash fish py tcl perl raku rb /, # "scripting languages"
+    source => qw/ lisp cl factor c cpp h rs zig /, # compiled languages
+    document => qw/ pdf epub doc docx odt rtf /,
     image => qw/ bmp gif jpeg jpg png webp /,
     audio => qw/ aac aif aiff flac m4a mp3 ogg opus wav wma /,
     video => qw/ avi flv m2t m4v mkv mov mp4 ogv webm wmv /,
-    archive => qw/ 7z bz2 gz rar tar zip /,
+    archive => qw/ 7z bz2 gz rar tar tgz zip /,
     directory => ("/", ),
 };
-%types{"all"} = %types.values[*;*]; # flatten to a single list of all extensions.
-%types{"visual"} = [|%types{"image"}, |%types{"video"}];
-%types{"media"} = [|%types{"image"}, |%types{"audio"}, |%types{"video"}];
+%types{"visual"} = (|%types{"image"}, |%types{"video"});
+%types{"media"} = (|%types{"image"}, |%types{"audio"}, |%types{"video"});
+%types{"code"} = (|%types{"script"}, |%types{"source"});
+%types{"supported"} = %types.values.reduce({ $^a.Array.append($^b.Array); }).List;
+
+sub types() {
+    #= Get a list of supported types.
+    return (|%types.keys, |("all", ));
+}
 
 sub normalize-type($_) {
     #= Get the "canonical" un-abbreviated name of the type.
-    return "text" if /^t(e?xt(ual)?)?$/;
-    return "image" if /^i(mages?)?$/;
-    return "audio" if /^(a(udio)?|mu(sic)?)$/;
-    return "video" if /^v(ideos?)?$/;
-    return "archive" if /^(c(omp(ress(ed)?)?)?|ar(ch(ive)?)?)$/;
-    return "visual" if /^vis(ual)?$/;
-    return "media" if /^me(dia)?$/;
-    return "directory" if /^d(ir(ectory)?)?$/;
-    return "all" if /^a(ll|ny)$/;
-    fail "unknown type \"$_\"; Try instead one of: " ~ %types.keys.sort.join(", ");
+    return "text" if /^ t(e?xt(ual)?)? $/;
+    return "config" if /^ co?nf(ig)? $/;
+    return "script" if /^ scr(ipt)? $/;
+    return "source" if /^ s(ou)?rce? $/;
+    return "document" if /^ do(c(u(ment)?)?)? $/;
+    return "image" if /^ ( i(ma?ge?s?)? | p(ic(tures?)?)? ) $/;
+    return "audio" if /^ ( a(udio)? | mu(sic)? | s(ound)? ) $/;
+    return "video" if /^ v(ideos?)? $/;
+    return "archive" if /^ ( c(omp(ress(ed)?)?)? | ar(ch(ive)?)? ) $/;
+    return "visual" if /^ vis(ual)? $/;
+    return "media" if /^ me(dia)? $/;
+    return "code" if /^ code $/;
+    return "supported" if /^ su(p(port(ed)?)?)? $/;
+    return "directory" if /^ d(ir(ectory)?)? $/;
+    return "all" if /^ ( a(ll|ny) | '*' ) $/;
+    fail "Unknown type \"$_\". Try instead one of: " ~ types().sort.join(", ") ~ ".";
 }
 
 sub type-extensions($type is copy) {
     #= Get a list of file extensions for TYPE.
+    if ($type ~~ /^\./) {
+        return $type.split(",").map(*.subst(/^\./, "")).List;
+    }
     return %types{normalize-type($type)};
 }
 
@@ -57,43 +80,70 @@ sub extension-of($filename) {
     return $filename.IO.extension.lc;
 }
 
-sub is-extension-type($filename, Mu $extensions) { # extensions must be Mu so that Junctions are not autothreaded.
-    #= True when FILENAME's extension is one of EXTENSIONS.
-    extension-of($filename) ~~ $extensions;
+sub is-type($filename, $type) {
+    #= True when FILENAME is of the specified type.
+    if ($type eq 'all') {
+        return True;
+    }
+    return extension-of($filename) ~~ any(|type-extensions($type));
 }
 
-subset output_style of Any where Str|True;
+sub GENERATE-USAGE(&main, |capture) is export {
+    &*GENERATE-USAGE(&main, |capture).subst('{types}', "all, " ~ types().sort.join(", "), :g);
+}
 
 sub MAIN(
-    Str $type is copy, #= The type to filter to; should be one of: text, image, audio, video, archive, directory, visual, media, all.
-    output_style :$print, #= Print the extensions for TYPE rather than filtering. a value can be provided to change the format; accepts "find", "space", or "newline" (default)
+    $type? is copy, #= The type to filter to. A file extension (including period) can be specified, or a media type (or an abbreviation of one). Supported media types are: {types}.
+    Bool :$invert=False, #= "Invert" the output; only print non-matches.
+                  :$print is copy, #= Print the extensions for TYPE rather than filtering. A value can be provided to change the format. Supported formats are: newline, space, find.
 ) {
     if ($print.defined) {
+        $type //= "supported";
+        my $extensions = type-extensions($type);
+
+        if ($type eq 'all') {
+            fail "Printing all is not implemented; maybe try \"supported\" instead?";
+        }
+
+        if ($invert) {
+            $extensions = (type-extensions("supported") ⊖ $extensions).keys;
+        }
+
         given $print {
-            when any(qw/ find bfs /) {
-                type-extensions($type).map({
-                    if ($_ eq '/') {
-                        "-type\nd";
-                    } else {
-                        "-iname\n*." ~ $_;
-                    }
-                }).join("\n-or\n").say;
+            when $_ === True or any(qw/ n nl newline /) {
+                type-extensions($type).map(&say);
             }
             when any(qw/ s sp space spaces /) {
                 type-extensions($type).join(" ").say;
             }
+            when any(qw/ find bfs /) {
+                $extensions.map(
+                    {
+                        if ($_ eq '/') {
+                            "-type\nd";
+                        } else {
+                            "-iname\n*." ~ $_;
+                        }
+                    }).join("\n-or\n").say;
+            }
+            when any(qw/ types type /) {
+                %types.keys.map(&say);
+            }
             default {
-                type-extensions($type).map(&say);
+                fail "Unknown --print format: \"$_\". Try instead one of: newline, space, find, types.";
             }
         }
         exit;
     }
 
-    my $extensions = type-extensions($type);
-
-    my $junction = any(|$extensions);
+    fail "A type must be provided. Try one of: " ~ types().sort.join(", ") ~ "." unless $type.defined;
 
     for $*IN.lines {
-        .say when is-extension-type($_, $junction);
-    }
+        my $is = is-type($_, $type);
+        if ($invert) {
+            .say unless $is;
+        } else {
+            .say when $is;
+        };
+    };
 }

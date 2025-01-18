@@ -2,7 +2,7 @@
 # find-broken-symlinks - Get a list of symlinks whose target does not exist.
 # This is basically just an easier-to-remember alias for `find -xtype l`.
 
-argparse -n find-broken-symlinks 'h/help' 'd/directory=' -- $argv
+argparse -n find-broken-symlinks 'h/help' 'd/directory=' 'e/exclude=+' -- $argv
 
 if set -q _flag_h
     echo "find-broken-symlinks - Get a list of symlinks whose target does not exist."
@@ -10,6 +10,7 @@ if set -q _flag_h
     echo
     echo "  -h/--help      - Print help and exit."
     echo "  -d/--directory - Specify the directory to recursively search in (default: current directory)."
+    echo "  -e/--exclude   - Exclude a directory."
     exit
 end
 
@@ -29,4 +30,21 @@ if not test -d "$directory"
     exit 1
 end
 
-find "$directory" -xtype l $argv
+if set -q _flag_e
+    set -l path_flag
+    for path in $_flag_e
+        set path (string replace (pwd) '.' (path resolve "$path"))
+        if string match --quiet '/*' "$path"
+            echo "$script: --exclude must specify a directory within the current ($(pwd))." >&2
+            exit 1
+        end
+        if not string match --quiet './*' "$path"
+            set path "./$path"
+        end
+        set path (string trim -c '/*' "$path")'/*'
+        set -a -- path_flag -path "$path" -or
+    end
+    set -- exclude_args -not \( $path_flag[..-2] -prune \)
+end
+
+find "$directory" $exclude_args -xtype l $argv

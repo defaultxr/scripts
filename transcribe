@@ -1,0 +1,82 @@
+#!/usr/bin/env fish
+# transcribe - Transcribe text from an image or audio file.
+
+# settings:
+
+set whisper_language 'en'
+set whisper_model 'tiny.en'
+set whisper_output_format 'txt'
+
+set image_extensions 'bmp' 'gif' 'jpeg' 'jpg' 'png' 'webp'
+set audio_extensions 'aac' 'aif' 'aiff' 'flac' 'm4a' 'mp3' 'ogg' 'opus' 'wav' 'wma'
+set video_extensions 'avi' 'flv' 'm2t' 'm4v' 'mkv' 'mov' 'mp4' 'ogv' 'webm' 'wmv' # FIX: video transcription is not yet implemented.
+
+# code:
+
+set -- script "$(path basename (status filename))"
+
+argparse -n $script 'h/help' 'o/output=' 's/screen' -- $argv
+
+if set -q _flag_h
+    echo "$script - Transcribe text from an image or audio file."
+    echo "Usage: $script [arguments] input-file"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -o/--output - Output file name." # FIX: implement.
+    echo "  -s/--screen - Transcribe text from the screen to the clipboard."
+    exit
+end
+
+function check_installed -d "Check if the specified program is installed, and fail if not."
+    if not command -qs "$argv[1]"
+        echo "$script: Error: $argv[1] is required, but doesn't appear to be installed."
+        exit 1
+    end
+end
+
+if set -q _flag_o
+    echo "$script: Error: --output is not yet implemented."
+    exit 1
+end
+
+if set -q _flag_s
+    check_installed 'tesseract'
+    set tmp "/tmp/transcribe"
+    slop -f "%g " | read G
+    echo "$G"
+    set GX (string split '+' $G | head -1 | string trim)
+    echo "$GX"
+    set sr (string split '+' $G | string split 'x')
+    set sr (printf "%s,%s,%s,%s" $sr[3] (string trim "$sr[4]") $sr[1] $sr[2])
+    scrot -a $sr "$tmp.png"
+    tesseract "$tmp.png" "$tmp"
+    cat "$tmp.txt" | c -
+    notify-send "$script" "Copied transcription starting with \"$(head -1 "$tmp.txt")\" to clipboard."
+    exit
+end
+
+if not set -q argv[1]
+    echo "$script: Error: You must provide an input file to transcribe."
+    exit 1
+else
+    set input $argv[1]
+end
+
+set ext (path extension "$input" | string trim --chars '.' --left)
+
+if test '-' = "$input"
+    echo "input." # FIX: live audio input recording->transcription
+else if contains $ext $image_extensions
+    check_installed 'tesseract'
+    set output (path change-extension '' "$input")
+    tesseract $input $output
+else if contains $ext $audio_extensions
+    check_installed 'whisper'
+    whisper --task transcribe --language "$whisper_language" --model "$whisper_model" --output_format "$whisper_output_format" "$input"
+else if contains $ext $video_extensions
+    echo "$script: Error: Transcription from video is not yet supported."
+    exit 1
+else
+    echo "$script: Error: Unknown file extension: $ext"
+    exit 1
+end

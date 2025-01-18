@@ -485,9 +485,9 @@ Edit the [[https://github.com/oniony/TMSU][~TMSU~]] tags for the specified file(
 
 Show arbitrary text in a simple GUI. May be useful in scripts bound to window manager shortcuts or the like. The text is editable, and keybindings can be specified with ~--action~ arguments.
 
-* network services
+* tools
 
-Scripts to interact with services on the (inter)net.
+Scripts for getting information from online services or local tools.
 
 ** ~define-selected~ ⚡
 
@@ -506,6 +506,12 @@ Get the lyrics for the specified or currently-playing song.
 /fish, dictd/
 
 Get synonyms for a word.
+
+** ~transcribe~ ⚡
+
+/fish, whisper, tesseract, slop, scrot/
+
+Transcribe an audio file, image file, or a selection of the screen to text.
 
 ** ~translate-selected~ ⚡
 

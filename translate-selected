@@ -3,11 +3,13 @@
 # Requirements: translate-shell, xclip, text-gui (part of defaultxr/scripts)
 # See also: define-selected
 
-argparse -n translate-selected 'h/help' 'f/full' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "translate-selected - translate the selected text, showing the result in a popup dialog."
-    echo "Usage: translate-selected [arguments]"
+argparse -n "$script" 'h/help' 'f/full' -- $argv
+
+if set -q _flag_h
+    echo "$script - translate the selected text, showing the result in a popup dialog."
+    echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
     echo "  -f/--full - Show additional information."
@@ -18,6 +20,8 @@ if not set -q _flag_f
     set -- brief --brief
 end
 
+set notification_id (notify-send --print-id --urgency=low --expire-time=10000 "$script" "Getting translation...")
+
 set title "selected text translation"
 set translation (xclip -o -selection primary | trans -no-ansi $brief 2>/tmp/translate-selected-err.txt | string collect)
 
@@ -25,6 +29,8 @@ if test -z "$translation"
     set title "translation error"
     set translation (cat /tmp/translate-selected-err.txt)
 end
+
+notify-send --replace-id="$notification_id" --urgency=low --expire-time=1 "Acquired translation."
 
 # zenity --info --width=800 --text="$translation"
 text-gui -T "$title" --text="$translation"

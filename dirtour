@@ -1,26 +1,51 @@
 #!/usr/bin/env fish
-# print the first file from each directory in CWD.
-# with an argument, print a random file from each directory instead of the first one.
+# dirtour - Get the first (or a random) file from each subdirectory.
 
-if test $argv[1] = '-'
+argparse --ignore-unknown 'script_name=' 'default_type=' -- $argv
+
+if set -q _flag_script_name
+    set script "$_flag_script_name"
+else
+    set -- script "$(path basename (status filename))"
+end
+
+argparse -n $script 'h/help' 't/type=' 'f/first' 'r/random' 'i/stdin' -- $argv
+
+if set -q _flag_h
+    echo "$script - Get the first (or a random) file from each subdirectory."
+    echo "Usage: $script [arguments] [directory]"
+    echo
+    echo "  -h/--help   - Print help and exit."
+    echo "  -t/--type   - Specify the media type (image, audio, video, etc) or file extension (including leading period) to get."
+    echo "  -f/--first  - Get the first file (alphabetically) from each subdirectory. This is the default behavior."
+    echo "  -r/--random - Get a random file from each subdirectory."
+    echo "  -i/--stdin  - Tour each subdirectory passed via stdin. Without this, tour the directories passed as arguments, or the current directory."
+    exit
+end
+
+if set -q _flag_i; or contains -- - $argv
     function gen_func
         cat
     end
 else
+    if test (count $argv) -gt 0
+        set dirs $argv
+    else
+        set dirs .
+    end
     function gen_func
-        find $argv[1] -not -type d
+        find $dirs -maxdepth 1 -type d | tail -n +2 # FIX: this "tail" only works if only one directory was passed.
     end
 end
 
-if contains '--shuffle' $argv
+if set -q _flag_r
     alias sort_func 'shuf'
 else
     alias sort_func 'sort'
 end
 
-for i in (find -maxdepth 1 -type d | tail -n +2)
-    gen_func (realpath $i) | sort_func | head -1
-end
+set find_media_args (filter --print=find $_flag_t)
 
-functions -e gen_func
-functions -e sort_func
+for dir in (gen_func)
+    find (path resolve $dir) -maxdepth 1 \( $find_media_args \) -not -type d | sort_func | head -1
+end # | v -T "dirtourv $path" -

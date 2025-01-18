@@ -51,6 +51,7 @@ def run_action(widget, command):
 def make_window(text, title=None, width=default_width, height=default_height, max_width=default_max_width, max_height=default_max_height):
   """Create the text-gui window."""
   root = Tk()
+  root.tk.call('tk', 'scaling', 1.5) # FIX: make configurable (via an env var maybe?)
   root.title(title or "text-gui")
   root.minsize(width, height)
   if max_width:
@@ -74,8 +75,8 @@ def make_window(text, title=None, width=default_width, height=default_height, ma
   root.bind("<Control-g>", lambda e: quit())
 
   for action in actions:
-    binding, command = action.split('=', maxsplit=1)
-    root.bind("<" + binding + ">", lambda e: run_action(textbox, command))
+    binding, command = action[0].split('=', maxsplit=1)
+    root.bind("<" + binding + ">", lambda e, cmd=command: run_action(textbox, cmd))
 
   root.mainloop()
 
@@ -87,7 +88,7 @@ if __name__ == "__main__":
   parser.add_argument("-H", "--height", dest="height", type=int, help="The window's initial height")
   parser.add_argument("--max-width", dest="max_width", type=int, help="The window's max width")
   parser.add_argument("--max-height", dest="max_height", type=int, help="The window's max height")
-  parser.add_argument("-a", "--action", dest="action", nargs='*', type=str, help="Set the command to run when a specified key is pressed. The command is passed the textual contents of the GUI via stdin. Example: --action Control-s=foo will send the text to the stdin of \"foo\" when ctrl+s is pressed. Note that this argument can be passed multiple times.")
+  parser.add_argument("-a", "--action", dest="action", nargs='*', action="append", type=str, help="Set the command to run when a specified key is pressed. The command is passed the textual contents of the GUI via stdin. Example: --action Control-s=foo will send the text to the stdin of \"foo\" when ctrl+s is pressed. Note that this argument can be passed multiple times.")
 
   args = parser.parse_args()
 

@@ -1,6 +1,9 @@
 #!/usr/bin/env fish
 # myip - Get your current public IP address.
 
+# notes:
+# https://serverfault.com/questions/1007184/how-to-check-ipv6-address-via-command-line
+
 set -- script "$(path basename (status filename))"
 
 argparse -n "$script" 'h/help' -- $argv

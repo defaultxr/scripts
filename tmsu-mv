@@ -3,7 +3,7 @@
 
 argparse -n tmsu-mv 'h/help' -- $argv
 
-if test -n "$_flag_h"
+if set -q _flag_h
     echo "tmsu-mv - move a file, then run tmsu repair for the new name and location."
     echo "Usage: tmsu-mv [arguments]"
     echo

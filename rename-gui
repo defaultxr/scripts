@@ -45,7 +45,7 @@ if not set -q _flag_e; and test -z (path extension "$new")
     set new "$new$pext"
 end
 
-if test "$(path dirname \"$new\")" = '.'
+if test "$(path dirname \"$new\")" = '.' # add the directory to the new filename
     set new "$dir/$new"
 end
 

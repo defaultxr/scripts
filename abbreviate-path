@@ -18,6 +18,6 @@ if test -z "$HOME"
     echo $argv
 else
     string replace -r "^$HOME" '~' $argv
-end | string replace -r '^https?:/+(www.)youtube.com/watch' 'yt:'
+end | string replace -r '^/home/(.+)$' '~$1' | string replace -r '^https?:/+(www.)youtube.com/watch' 'yt:'
 
 true # "string replace" returns false if no replacement was done; we return true instead.

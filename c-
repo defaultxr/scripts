@@ -1,14 +1,21 @@
 #!/usr/bin/env fish
 # c- - Alias for "c -"; copy standard input to the clipboard.
 
-argparse -n c- 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
+
+argparse -n "$script" 'h/help' 'a/args' -- $argv
 
 if set -q _flag_h
-    echo "c- - Alias for \"c -\"; copy standard input to the clipboard."
-    echo "Usage: c- [arguments]"
+    echo "$script - Alias for \"c -\"; copy standard input to the clipboard."
+    echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help - Print help and exit."
+    echo "  -a/--args - Send arguments to the clipboard."
     exit
 end
 
-c -
+if set -q _flag_a
+    c -a $argv
+else
+    c -
+end

@@ -1,23 +1,25 @@
 #!/usr/bin/env fish
-# move a file using a file selector gui.
+# move-gui - Move or copy file(s) using a file selector GUI.
 # accepts a list of files either as arguments or from stdin if '-' is the first argument.
 # will also call 'tmsu repair' if you have tmsu in your path.
-# requires zenity.
+# requirements: zenity
 
-# FIX - maybe this should be able to rename files too?
+# FIX: maybe this should be able to rename files too?
+# FIX: confirm overwriting existing files
 
-argparse -n move-gui 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "move-gui - move a file using a file selector gui."
-    echo "Usage: move-gui [files]"
+argparse -n "$script" 'h/help' 'c/copy' -- $argv
+
+if set -q _flag_h
+    echo "$script - Move or copy file(s) using a file selector GUI."
+    echo "Usage: $script [files]"
     echo
     echo "  -h/--help - Print help and exit."
+    echo "  -c/--copy - Copy instead of move."
     echo "  -         - Read file list from stdin."
     exit
 end
-
-set script (path basename (status filename))
 
 if test (count $argv) -eq 0; or test "$argv[1]" = '-'
     set files (cat)
@@ -27,16 +29,22 @@ end
 
 set count (count $files)
 
+if set -q _flag_c
+    set move_or_copy 'Copy'
+else
+    set move_or_copy 'Move'
+end
+
 if test $count -eq 0
     zenity --info --title="$script Error" "No files"
     exit 1
 else if test $count -eq 1
-    set title "Move $(path basename $files[1]) To..."
+    set title "$move_or_copy $(path basename $files[1]) To..."
 else
-    set title "Move $count Files To..."
+    set title "$move_or_copy $count Files To..."
 end
 
-set dir (realpath $files[1])
+set dir (path resolve "$files[1]")
 
 set destination (zenity --file-selection --title="$script: $title" --directory --filename="$dir")
 
@@ -45,10 +53,14 @@ if test $status -ne 0
 end
 
 for i in $files
-    set full (realpath $i)
-    mv $full $destination
-    set basename (path basename $i)
-    if command -q tmsu
-        tmsu repair --manual $full "$destination/$basename" 2>/dev/null
+    set full (path resolve "$i")
+    if set -q _flag_c
+        cp "$full" "$destination"
+    else
+        mv "$full" "$destination"
+    end
+    set basename (path basename "$i")
+    if not set -q _flag_c; and command -q tmsu
+        tmsu repair --manual "$full" "$destination/$basename" 2>/dev/null
     end
 end

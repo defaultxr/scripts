@@ -9,15 +9,18 @@ if set index (contains --index -- -- $argv)
     set argv $argv[..(math $index - 1)]
 end
 
-argparse -n $script --ignore-unknown 'h/help' 'd/dir=' '1/1-dir' -- $argv
+argparse -n "$script" --ignore-unknown 'h/help' 'd/dir=' '1/1-dir' 'e/exclude=+' 'E/errors' 'exclusion-args' -- $argv
 
 if set -q _flag_h
     echo "$script - Locate files by name. Basically a shortcut for a case-insensitive filename search."
     echo "Usage: $script [arguments] [search terms]"
     echo
-    echo "  -h/--help  - Print help and exit."
-    echo "  -d/--dir   - Specify the directory to search in (default: current)."
-    echo "  -1/--1-dir - Only search in one directory (don't recurse into subdirectories)."
+    echo "  -h/--help        - Print help and exit."
+    echo "  -d/--dir         - Specify the directory to search in (default: current)."
+    echo "  -1/--1-dir       - Only search in one directory (don't recurse into subdirectories)."
+    echo "  -e/--exclude     - Specify path(s) to exclude (can be specified multiple times; exclusions are also read from the LOC_EXCLUSIONS variable, as well as the .loc-exclusions file in the directory $script is being invoked from)."
+    echo "  -E/--errors      - Show traversal errors (i.e. \"permission denied\" and similar)."
+    echo "  --exclusion-args - Print the find arguments to exclude the exclusions, and then exit."
     exit
 end
 
@@ -33,6 +36,45 @@ end
 
 if set -q _flag_1
     set -- one_dir -maxdepth 1
+end
+
+set extra_args
+
+if not set -q _flag_E; and command -qs bfs
+    set -a -- extra_args -noerror
+end
+
+set exclusion_args
+
+function add_exclusions
+    for exclusion in $argv
+        set -l exc_full (path resolve "$exclusion") # (string trim --chars '/' ...)
+        set -l exc (string replace "$(pwd)" '.' "$exc_full")
+        if command -qs bfs
+            set -a -- exclusion_args -exclude -wholename "$exc_full/*"
+        else
+            set -a -- exclusion_args -not \( -wholename "$exc_full/*" -prune \)
+        end
+    end
+end
+
+if set -q _flag_e
+    add_exclusions $_flag_e
+end
+
+if test -e ./.loc-exclusions
+    add_exclusions (cat ./.loc-exclusions)
+end
+
+if set -q LOC_EXCLUSIONS
+    add_exclusions $LOC_EXCLUSIONS
+end
+
+if set -q _flag_exclusion_args
+    printf '%s\n' $exclusion_args
+    exit
+else
+    set -a -- extra_args $exclusion_args
 end
 
 if not set -q terms

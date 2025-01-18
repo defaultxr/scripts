@@ -11,14 +11,26 @@ argparse -n $script 'h/help' 's/silent' -- $argv
 
 if set -q _flag_h
     echo "$script - Search upwards in the directory hierarchy for the specified file."
-    echo "Usage: $script [arguments] [filename]"
+    echo "Usage: $script [arguments] [directory] [filename]"
     echo
     echo "  -h/--help   - Print help and exit."
     echo "  -s/--silent - Don't print anything to stdout."
     exit
 end
 
-set filename $argv[1]
+if test (count $argv) -gt 1
+    if not test -d "$argv[1]"
+        cd (path dirname "$argv[1]")
+    else
+        cd "$argv[1]"
+    end
+    set filename "$argv[2]"
+else if test (count $argv) = '1'
+    set filename "$argv[1]"
+else
+    echo "$script: Error: You must provide a filename to search for." >&2
+    exit 1
+end
 
 while true
     if test -e "$filename"

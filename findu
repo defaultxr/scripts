@@ -26,4 +26,4 @@ if not command -qs bfs
     set find find
 end
 
-command $find $argv -not \( $dotargs (filter --print=find all) \)
+command $find $argv -not \( $dotargs (filter --print=find supported) \)

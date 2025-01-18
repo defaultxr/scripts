@@ -2,17 +2,35 @@
 # tmsu-rm - trash or delete a file, then run tmsu repair to remove it from the database.
 # FIX: add an argument to force using rm instead of trash, and make the default behavior to only use trash-put and error if it's not found.
 
-argparse -n tmsu-rm 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "tmsu-mv - trash or delete a file, then run tmsu repair to remove it from the database."
-    echo "Usage: tmsu-rm [arguments]"
+argparse -n "$script" 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script - trash or delete a file, then run tmsu repair to remove it from the database."
+    echo "Usage: $script [arguments]"
     echo
-    echo "  -h/--help - Print help and exit."
+    echo "  -h/--help  - Print help and exit."
+    echo "  -r/--rm    - Force use of rm to remove files."
+    echo "  -t/--trash - Force use of trash-put to remove files."
     exit
 end
 
-set rm_cmd (if command -qs trash-put; echo 'trash-put'; else; echo 'rm'; end)
+if set -q _flag_r
+    if not command -qs rm
+        echo "$script: Could not find 'rm' in PATH." >&2
+        exit 1
+    end
+    set rm_cmd 'rm'
+else if set -q _flag_t
+    if not command -qs rm
+        echo "$script: Could not find 'trash-put' in PATH." >&2
+        exit 1
+    end
+    set rm_cmd 'trash-put'
+else
+    set rm_cmd (if command -qs trash-put; echo 'trash-put'; else; echo 'rm'; end)
+end
 
 command "$rm_cmd" $argv
 tmsu untag --all $argv

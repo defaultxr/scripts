@@ -2,23 +2,44 @@
 # ssuspend - "Screen suspend". Simply turns off your monitor(s).
 # 'ssuspend on' to unsuspend.
 
-argparse -n ssuspend 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "ssuspend - \"Screen suspend\". Simply turns off your monitor(s)."
-    echo "Usage: ssuspend [arguments] [on/off]"
+argparse -n $script 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "$script - \"Screen suspend\". Simply turns off your monitor(s)."
+    echo "Usage: $script [arguments] [on/off]"
     echo
     echo "  -h/--help - Print help and exit."
     exit
 end
 
-if contains -- "$argv[1]" "on" "1"
-    set action on
-else
+if not set -q argv[1]; or contains -- "$argv[1]" "off" "0"
     # per https://wiki.archlinux.org/title/Display_Power_Management_Signaling :
     # "Note that DPMS was developed for CRT monitors, and on LCD displays, there is normally no difference between the standby, suspend and off modes."
     # "off" is used as per the suggestion in xscreensaver-command's man page.
-    set action off
+    set action 'off'
+else if contains -- "$argv[1]" "on" "1"
+    set action 'on'
+# else if contains -- "$argv[1]" "toggle"
+#     set action 'toggle'
+else
+    warn -t "$script" -l 'error' "Unknown action: \"$argv[1]\"."
+    exit 1
 end
 
-xset dpms force $action
+if set -q WAYLAND_DISPLAY
+    if test "$XDG_CURRENT_DESKTOP" = 'sway'
+        swaymsg "output * power $action"
+    else
+        warn -t "$script" -l 'error' "Unsupported Wayland desktop: \"$XDG_CURRENT_DESKTOP\"."
+        exit 1
+    end
+else if set -q DISPLAY
+    xset dpms force $action
+else if test "$TERM" = 'linux'
+    vbetool dpms $action
+else
+    warn -t "$script" -l 'error' "Unknown/unsupported display manager."
+    exit 1
+end

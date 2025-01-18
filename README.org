@@ -329,6 +329,12 @@ By default, the only edits this makes are to remove YouTube's ~&pp=~ tracking pa
 
 Run ripgrep on all of the files (not directories) installed by a package.
 
+** ~myip~ ⚡
+
+/fish, curl/
+
+Get your current IP address as seen from the public internet.
+
 ** ~remove-unneeded-packages~ ⚡
 
 /fish, pacman/
@@ -494,12 +500,6 @@ Define the specified or selected word, showing the result in a popup dialog.
 /fish, clyrics, ffprobe (ffmpeg)/
 
 Get the lyrics for the specified or currently-playing song.
-
-** ~myip~ ⚡
-
-/fish, curl/
-
-Get your current IP address as seen from the public internet.
 
 ** ~synonyms~ ⚡
 

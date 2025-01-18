@@ -32,11 +32,11 @@ end
 set acpi (acpi)
 
 for battery in $acpi
-    echo "$battery" | string match --quiet --regex '^Battery (?<id>[0-9]+): (?<state>[^,]+), (?<percent>[0-9]+)%,'
-    if contains "$state" 'Full' 'Charging'; or test $percent = 0
+    echo "$battery" | string match --quiet --regex '^Battery (?<id>[0-9]+): (?<state>[^,]+), (?<percent>[0-9]+)%,?'
+    if contains "$state" 'Full' 'Charging'; or test "$percent" = 0
         continue
     end
-    if test $percent -lt $low_percent
+    if test "$percent" -lt "$low_percent"
         notify-send -u critical -h string:x-dunst-stack-tag:check-battery "Battery $id low" "$state ($percent%)."
         if test -n "$sound"
             mpv $sound &

@@ -71,12 +71,6 @@ Generate and display a QR code for the specified text, or generate a QR code to 
 
 Generate and display a QR code for the text in the clipboard.
 
-** ~romanize~
-
-/python, romkan/
-
-Romanize Japanese text from arguments or stdin. May be helpful for learning Japanese pronunciation.
-
 ** ~set-title~
 
 /fish/

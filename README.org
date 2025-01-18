@@ -41,6 +41,30 @@ Alias for ~c -~; copy standard input to the clipboard.
 
 Open a man page in Emacs.
 
+** ~e~
+
+/fish, emacs/
+
+Edit a file in Emacs. If called on a non-local machine, will open the file in the local Emacs via TRAMP.
+
+** ~e-~
+
+/fish, emacs/
+
+Send standard input to an Emacs buffer.
+
+** ~e-fg~
+
+/fish, emacs/
+
+Edit the specified file in Emacs, exiting only once its buffer is closed.
+
+** ~ediff~
+
+/fish, emacs/
+
+Diff files with Emacs' ~ediff~.
+
 ** ~eww~
 
 /fish, emacs/

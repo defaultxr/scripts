@@ -1,0 +1,15 @@
+#!/usr/bin/env fish
+# ediff - Run Emacs' ediff on two files.
+# https://www.reddit.com/r/archlinux/comments/3szad1/how_to_set_emacs_as_diffeditor_for_pacnew/
+
+argparse -n ediff 'h/help' -- $argv
+
+if set -q _flag_h
+    echo "ediff - Run Emacs' ediff on two files."
+    echo "Usage: ediff [arguments]"
+    echo
+    echo "  -h/--help - Print help and exit."
+    exit
+end
+
+e --diff "$argv[1]" "$argv[2]"

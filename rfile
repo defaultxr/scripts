@@ -1,27 +1,38 @@
 #!/usr/bin/env fish
-# rfile - Output a random file in the current directory.
-# with an argument ARG, output a random file in any of a maximum of ARG subdirectories.
+# rfile - Output a random file within the current directory and subdirectories. Unknown arguments are forwarded to find.
 
-argparse -n rfile 'd/depth=' 'h/help' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "rfile - Output a random file from the current directory and subdirectories."
-    echo "Usage: rfile [arguments] [depth]"
+argparse -n "$script" --ignore-unknown 'h/help' 'd/depth=' 'n/number=' -- $argv
+
+if set -q _flag_h
+    echo "$script - Output a random file within the current directory and subdirectories. Unknown arguments are forwarded to find."
+    echo "Usage: $script [arguments]"
     echo
     echo "  -h/--help   - Print help and exit."
-    echo "  -d/--depth  - Set the depth of subdirectories to check (default: 1)."
+    echo "  -d/--depth  - The depth of subdirectories to check, or 0 to recurse infinitely (default: 1)."
+    echo "  -n/--number - The number of files to yield (default: 1)."
     exit
 end
 
-if set -q _flag_d
-    set depth "$_flag_d"
+if command -qs bfs
+    set find 'bfs'
 else
-    if test (count $argv) = 0
-        set depth 1
-    else
-        set depth $argv[1]
-    end
+    set find 'find'
 end
 
-find -maxdepth $depth | shuf | head -1
+if set -q _flag_d
+    if not test "$_flag_d" = '0'
+        set -- maxdepth -maxdepth "$_flag_d"
+    end
+else
+    set -- maxdepth -maxdepth '1'
+end
 
+if set -q _flag_n
+    set number "$_flag_n"
+else
+    set number '1'
+end
+
+command $find $maxdepth $argv | shuf | head -$number

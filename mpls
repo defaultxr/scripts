@@ -18,21 +18,23 @@
 # show the current song and the 20 before and after it:
 # mpls -c 20
 
-# configuration:
+# settings:
 
 # text to show in front of the current track
 set prepend '▶ '
 
 # code:
 
-argparse -n mpls 'h/help' 'c/context=?!_validate_int --min 1' -- $argv
+set -- script "$(path basename (status filename))"
 
-if test -n "$_flag_h"
-    echo "mpls - list tracks in mpd's current playlist."
-    echo "Usage: mpls [arguments] [number]"
+argparse -n "$script" 'h/help' 'c/context=?!_validate_int --min 1' -- $argv
+
+if set -q _flag_h
+    echo "$script - list tracks in mpd's current playlist."
+    echo "Usage: $script [arguments] [number]"
     echo
     echo "  -h/--help    - Print help and exit."
-    echo "  -c/--context - Only show tracks in the playlist near the current."
+    echo "  -c/--context - Only show N items of \"context\" around the current track (default: 10). Without this argument, the full playlist is listed."
     exit
 end
 
@@ -45,7 +47,7 @@ else
     set num 10
 end
 
-if test (count $argv) -gt 0; and string match -qr '^\d+$' $argv[1]
+if test (count $argv) -gt 0; and string match -qr '^\d+$' $argv[1] # FIX: this method of setting context is deprecated.
     set num $argv[1]
 end
 
@@ -58,7 +60,7 @@ if test (count $mpc) -gt 1 # MPD is playing.
     end
 else # MPD is not playing any track.
     if set -q _flag_c
-        echo "MPD is not playing, so there is no playlist context."
+        echo "$script: MPD is not playing, so there is no playlist context." >&2
         exit 1
     else
         mpc $formatargs playlist

@@ -1,7 +1,7 @@
 #+TITLE: my-scripts
 #+DESCRIPTION: Excerpt of modula t.'s personal script collection.
 
-This is my personal collection of scripts.
+This is (part of) my personal collection of scripts.
 
 They range in complexity and usefulness; some of them are little more than aliases, while others contain a lot more logic and functionality. They should all support a ~-h~ or ~--help~ argument to display a summary and basic help information (it should be considered a bug if any don't). Some of the scripts have configuration options at the top of the file that you may need or want to change, but I strive for "sensible defaults" and attempt to auto-detect "the right thing" when possible.
 
@@ -11,7 +11,7 @@ The scripts are mostly written in [[https://fishshell.com/][Fish]] (because Fish
 
 The scripts in this collection that I find most useful are marked with ⚡.
 
-The full list of scripts follows. Each is listed with its requirements and a short description.
+All of the scripts are contained in the ~src/~ directory, but they're also listed below, with their requirements and a synopsis of their functionality.
 
 * utility
 

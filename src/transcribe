@@ -44,6 +44,10 @@ if set -q _flag_s
     set tmp "/tmp/transcribe"
     rm "$tmp.png"
     slop -f "%g " | read G
+    if test $status -gt 0
+        notify-send "$script" "Screen transcription canceled."
+        exit 1
+    end
     echo "$G"
     set GX (string split '+' $G | head -1 | string trim)
     echo "$GX"

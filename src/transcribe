@@ -43,7 +43,7 @@ end
 if set -q _flag_s
     check_installed 'tesseract'
     set tmp "/tmp/transcribe"
-    rm "$tmp.png"
+    rm -f "$tmp.png"
     slop -f "%g " | read G
     if test $status -gt 0
         notify-send "$script" "Screen transcription canceled."

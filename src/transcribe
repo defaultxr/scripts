@@ -23,7 +23,7 @@ if set -q _flag_h
     echo "Usage: $script [arguments] input-file"
     echo
     echo "  -h/--help   - Print help and exit."
-    echo "  -o/--output - Output file name." # FIX: implement.
+    # echo "  -o/--output - Output file name." # FIX: implement.
     echo "  -s/--screen - Transcribe text from the screen to the clipboard."
     exit
 end

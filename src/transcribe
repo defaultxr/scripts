@@ -42,6 +42,7 @@ end
 if set -q _flag_s
     check_installed 'tesseract'
     set tmp "/tmp/transcribe"
+    rm "$tmp.png"
     slop -f "%g " | read G
     echo "$G"
     set GX (string split '+' $G | head -1 | string trim)

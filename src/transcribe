@@ -1,6 +1,6 @@
 #!/usr/bin/env fish
 # transcribe - Transcribe text from an image or audio file.
-# requirements: tesseract (for images), whisper (for audio), slop (for selection a screen region), scrot (for capturing the screen region).
+# requirements: tesseract (for images), whisper (for audio), slop (for selecting a screen region), scrot (for capturing the screen region).
 
 # settings:
 

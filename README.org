@@ -1,4 +1,4 @@
-#+TITLE: my-scripts
+#+TITLE: scripts
 #+DESCRIPTION: Excerpt of modula t.'s personal script collection.
 
 This is (part of) my personal collection of scripts.
@@ -221,7 +221,7 @@ Find visual files (images, video).
 
 /fish/
 
-Recursively fix permissions on a file or directory.
+Recursively fix permissions on a file or directory. *BE VERY CAREFUL WITH THIS SCRIPT, AS PERMISSIONS ARE NOT BACKED UP BEFORE THEY'RE CHANGED.*
 
 ** ~loc~ ⚡
 
@@ -431,13 +431,13 @@ Capture the audio output going to the speakers and record it to a file.
 
 ** ~content-aware-scale~
 
-/fish, convert (imagemagick)/
+/fish, convert (imagemagick), ffmpeg, parallel, sox/
 
-Content-aware scale a video. See [[https://www.imagemagick.org/Usage/resize/#liquid-rescale][ImageMagick's documentation]] for more information about what this does, but basically, it can be used to make a video look silly. Examples: [[https://www.youtube.com/watch?v=PwKABG6Wzdo][one]], [[https://www.youtube.com/watch?v=LYbgKh01daA][two]], [[https://www.youtube.com/watch?v=BCxzQF47dYQ][three]].
+Content-aware scale a video. See [[https://www.imagemagick.org/Usage/resize/#liquid-rescale][ImageMagick's documentation]] for more information about what this does, but basically, it can be used to make a video look silly. Examples: [[https://www.youtube.com/watch?v=PwKABG6Wzdo][one]], [[https://www.youtube.com/watch?v=LYbgKh01daA][two]], [[https://www.youtube.com/watch?v=BCxzQF47dYQ][three]]. For good measure, it also applies vibrato to the audio.
 
 ** ~convert-audio~ ⚡
 
-/fish, ffmpeg/
+/fish, ffmpeg, parallel/
 
 Convert a set of audio files into a specified audio format, preserving tags. Uses GNU Parallel to parallelize the jobs to convert as fast as possible, ~nice~ing the processes to run with a lower priority, to not disturb other processes on your system.
 
